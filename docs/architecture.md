@@ -20,8 +20,9 @@ The orchestrator is the only host that initiates SSH connections during
 the nightly run; every other host listens. SSH ports are non-default
 (1249 / 1622) as a low-effort mitigation against opportunistic scanning (also as part of historic ports in the infrastructure - NAT),
 naturally not used as a primary defense. The main defense is based on key-only authentication,
-disabled root password, and `fail2ban` watching `auth.log`. DC stands
-for Data Center, each one is located in France and at different locations.
+disabled root password, and `fail2ban` watching `auth.log`. 
+
+DC stands for Data Center, each one is located in France and at different locations.
 OVH dedicated servers run software RAID 1 (example : 2 × 4 TB → ~4 TB usable) at the hardware 
 layer. RAID provides resilience against single-disk failure; it is not a substitute 
 for the cross-site backup chain described in this document.
