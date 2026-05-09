@@ -92,7 +92,7 @@ remote_prepare_luks() {
 set -Eeuo pipefail
 LOG_FILE="/var/log/${mapper_name}.remote.log"
 . /root/backup-orchestrator/luks_functions.sh
-prepare_luks_mount "ssh -q -T -o LogLevel=ERROR nas-home 'cat /volume1/NetBackup/.ash'" "$crypt_file" "$mapper_name" "/home/tmp_crypt"
+prepare_luks_mount "ssh -q -T -o LogLevel=ERROR nas-core 'cat /volume1/NetBackup/.ash'" "$crypt_file" "$mapper_name" "/home/tmp_crypt"
 EOF
 }
 
