@@ -16,7 +16,7 @@
 
 This is the operational backup layer of a small but real production
 infrastructure that I have administered in autonomy since late 2018 ‒
-three physical sites interconnected over a Tailscale mesh, three dedicated
+three physical sites interconnected over a Tailscale mesh, up to three dedicated
 servers hosted at OVH for the Internet-facing services (web, mail, MX
 secondary). It supports a 24/7 e-commerce activity. The full architecture
 is documented in a companion repository:
@@ -28,19 +28,18 @@ up, encrypted, replicated, verified, and how silent failures are caught**.
 Operating this stack for seven years has produced a handful of opinions 
 that you will find embedded in the code:
 
-- **Backing up is not enough — you have to restore.** A backup that has
-  never been restored is a hypothesis, not a backup. See
+- **Backing up goes along tested restoration.** A backup needs to be restored to prove it is fully effective. See
   [`docs/restoration-runbook.md`](docs/restoration-runbook.md) and
   [`verification/`](verification/).
-- **Idempotency saves you at 3 AM.** Every LUKS operation in
+- **Idempotency for backups = peace of mind.** Every LUKS operation in
   [`orchestrator/luks_functions.sh`](orchestrator/luks_functions.sh)
   cleans up after itself, on the success path **and** on the error path.
-- **Errors that go unread don't exist.** The orchestrator pulls remote
+- **Errors that go unread are silent killers.** The orchestrator pulls remote
   logs back, scans them for negative markers, and only the abnormal
-  outcome reaches your inbox. See
+  outcome reaches the inbox. See
   [`docs/log-marker-strategy.md`](docs/log-marker-strategy.md).
 
-A short, frank list of incidents these techniques have caught in the wild
+A short list of real incidents these techniques have caught in the wild
 is in [`docs/real-incidents.md`](docs/real-incidents.md).
 
 ---
@@ -49,27 +48,27 @@ is in [`docs/real-incidents.md`](docs/real-incidents.md).
 
 ```
 linux-prod-backup-toolbox/
-├── README.md                           you are here
+├── README.md                           This file
 ├── LICENSE                             MIT for code, CC-BY-SA 4.0 for docs
 ├── docs/
-│   ├── architecture.md                 topology, hosts, data flows
-│   ├── threat-model.md                 what we protect against
-│   ├── 3-2-1-strategy.md               how 3-2-1 is concretely applied
-│   ├── log-marker-strategy.md          why and how we hunt failures in logs
-│   ├── restoration-runbook.md          the "what to do when it burns"
-│   └── real-incidents.md               silent failures actually detected
-├── orchestrator/                       the central conductor (Debian VM)
-│   ├── backup-nightly.sh               main scheduler, run by systemd
-│   ├── luks_functions.sh               idempotent LUKS open/close library
-│   ├── backup-nightly.service          systemd unit
-│   ├── backup-nightly.timer            systemd timer (00:30 daily)
-│   └── .smtp_pass.example              shape of the SMTP password file
-├── nodes/                              per-node backup logic
+│   ├── architecture.md                 Topology, hosts, data flows
+│   ├── threat-model.md                 What we protect against
+│   ├── 3-2-1-strategy.md               How 3-2-1 methodology is applied
+│   ├── log-marker-strategy.md          Hunt for failures in logs
+│   ├── restoration-runbook.md          Recovery actions
+│   └── real-incidents.md               Silent failures detected
+├── orchestrator/                       The backup conductor (Debian VM)
+│   ├── backup-nightly.sh               Main scheduler, run by systemd
+│   ├── luks_functions.sh               Idempotent LUKS open/close library
+│   ├── backup-nightly.service          Systemd unit
+│   ├── backup-nightly.timer            Systemd timer (00:30 daily)
+│   └── .smtp_pass.example              SMTP password file basefile
+├── nodes/                              Per-node backup logic
 │   ├── nas-home/                       Synology NAS (DSM 7.3.x, ash shell)
-│   │   ├── backup.sh                   nightly cross-replication
-│   │   └── mv2usb.sh                   daily mirror to detachable USB
-│   ├── web-mail/                       Internet-facing web + mail (Ubuntu LTS)
-│   │   ├── backup
+│   │   ├── backup.sh                   Nightly script
+│   │   └── mv2usb.sh                   Daily mirror to detachable 8To USB
+│   ├── web-mail/                       Web + mail Server (Ubuntu LTS)
+│   │   ├── backup                      
 │   │   ├── backup_webapp.sh
 │   │   ├── backup_monthly_sql.sh
 │   │   └── log_healthcheck.sh
