@@ -391,7 +391,7 @@ run_nas_backups_on_web_mail() {
     "$log_file" \
     "ssh -q -o LogLevel=ERROR -p 1622 -T -x" \
     "/home/Photos/" \
-    "root@web-mail.example.org:/home/Backup_NasHome/Photos/" \
+    "root@web-mail.example.org:/home/Backup_NasCore/Photos/" \
     "--delay-updates"
 
   dual_luks_section \
