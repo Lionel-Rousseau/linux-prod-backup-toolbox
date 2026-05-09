@@ -68,15 +68,15 @@ linux-prod-backup-toolbox/
 │   │   ├── backup.sh                   Nightly script
 │   │   └── mv2usb.sh                   Daily mirror to detachable 8To USB
 │   ├── web-mail/                       Web + mail Server (Ubuntu LTS)
-│   │   ├── backup                      
-│   │   ├── backup_webapp.sh
-│   │   ├── backup_monthly_sql.sh
-│   │   └── log_healthcheck.sh
+│   │   ├── backup                      System backup
+│   │   ├── backup_webapp.sh            Web & MySQL daily backups
+│   │   ├── backup_monthly_sql.sh       MySQL monthly specific backup
+│   │   └── log_healthcheck.sh          Log checks
 │   ├── mx-secondary/                   secondary MX + offsite storage (Ubuntu LTS)
-│   │   ├── backup
-│   │   └── log_healthcheck.sh
+│   │   ├── backup                      System backup
+│   │   └── log_healthcheck.sh          Log checks
 │   └── raspberry-pi/                   home-automation Pi nodes
-│       └── backup_image.sh
+│       └── backup_image.sh             Imaging script
 ├── verification/                       restoration test scripts
 │   ├── README.md
 │   ├── restore-test-rsync.sh           pulls a sample from a backup, diffs it
@@ -92,24 +92,24 @@ linux-prod-backup-toolbox/
 
 ---
 
-## Architecture, in one paragraph
+## The Architecture
 
 A nightly orchestrator running on a hardened internal VM (Debian) connects
-over SSH to four backup endpoints — the Synology NAS at home, the
+over SSH to four backup endpoints — the Synology NAS at office, the
 Internet-facing combined web + mail server, the secondary MX, and a
 Raspberry-Pi-driven home node. Each endpoint runs its own backup logic.
 The orchestrator does three things on its own: it **synchronizes the
 shared library and credentials** to every node with SHA-256 verification
 to prevent silent drift, it **launches each remote backup with a deadline
 and a hard kill**, and it **fetches the resulting log files back, scans
-them for negative markers and stale dates, and decides whether to send
+them for errors message and stale dates, and decides whether to send
 mail at all**. A normal night produces no email; you only hear from it
 when something is wrong.
 
 Cross-site replication uses `rsync` over SSH on non-default ports, with
 LUKS-encrypted containers on the destination side, opened just-in-time
 with a key fetched from a third host (so a single host compromise does
-not give the attacker the LUKS key). See
+not give the attacker the LUKS key). Check
 [`docs/architecture.md`](docs/architecture.md) for the full topology.
 
 ---
@@ -120,14 +120,14 @@ not give the attacker the LUKS key). See
   remaining window is shorter than the requested timeout, the timeout
   shrinks. After the global window closes, queued jobs are skipped and
   flagged.
-- **Single-flight locking.** `flock` on the orchestrator side, per-job
-  `mkdir`-based locking on the remote side, so a missed run cannot
-  collide with the next one.
+- **Single-execution locking.** `flock` on the orchestrator side, per-job
+  `mkdir` locking on the remote side, so a missed run cannot collide
+  with the next one.
 - **SHA-256 verified config sync.** When the orchestrator pushes
   `luks_functions.sh` or `.smtp_pass` to a node, it computes the local
   hash, compares it to the remote hash, and only transfers when they
-  differ — and re-verifies the hash on the destination after upload.
-- **Idempotent LUKS lifecycle.** `prepare_luks_mount` and
+  differ and re-verifies the hash on the destination after upload.
+- **Idempotent LUKS cycles.** `prepare_luks_mount` and
   `close_luks_mount` always start by cleaning up any previously-open
   mapper or stuck mount on the same path; the error trap on every entry
   point also performs an emergency close so a crashed run never leaves a
@@ -135,17 +135,17 @@ not give the attacker the LUKS key). See
 - **Just-in-time key retrieval.** LUKS keys never live on the destination
   host. The mapper-open command fetches the key over SSH from a separate
   host, pipes it into `cryptsetup` on stdin, never writes it to disk.
-- **Outcome-based alerting.** The orchestrator pulls remote logs after
-  each job, asserts (a) the file exists, (b) its date matches today,
-  (c) the success marker is present, and (d) no known error strings
+- **Alerting.** The orchestrator pulls remote logs after
+  each job, check if the file exists, check its date matches today,
+  check the success marker is present, and finally that no known error strings
   appear (`scp:`, `rsync:`, `ERROR:`, `Permission denied`,
   `Connection timed out`, `Broken pipe`, `not mounted`, `LOCK_BUSY`,
-  `No such file or directory`). Anything failing those checks promotes
-  the run to `FAIL`, and only `FAIL` runs send mail.
+  `No such file or directory`). Anything failing those checks mark
+  the run as `FAIL`, and only `FAIL` triggers an email.
 
 ---
 
-## Running it
+## The Run
 
 The orchestrator is driven by a systemd timer that fires once a day at
 00:30. The unit file is in
@@ -157,7 +157,7 @@ Per-node scripts are designed to be invokable independently as well —
 each one accepts no arguments, reads its configuration from environment
 variables (or hardcoded paths if you prefer), writes structured logs to
 `/var/log/`, and exits with a non-zero status on failure (or `24` on the
-benign rsync race condition, which the orchestrator silently swallows).
+benign rsync race condition, which the orchestrator silently ignores).
 
 The minimum-viable configuration is described in
 [`examples/env.example`](examples/env.example).
@@ -166,9 +166,9 @@ The minimum-viable configuration is described in
 
 ## What this is not
 
-- **Not a backup product.** This is glue. It assumes `rsync`,
-  `cryptsetup`, `restic`, `swaks`, `ssh`, `flock` are present on the
-  hosts. It does not bundle them.
+- **This is not a backup product.** You will need `rsync`,
+  `cryptsetup`, `restic`, `swaks`, `ssh`, `flock` to be present on the
+  hosts. They are not included here.
 - **Not multi-tenant.** It is sized for a small infrastructure with a
   handful of nodes — perhaps a dozen. Past that, look at proper backup
   software (BorgBackup with a backup server, Bareos, restic with
