@@ -16,9 +16,9 @@ set -Eeuo pipefail
 
 LOGS=(
   "/var/log/02_backupMX2_WebMail.log"
-  "/var/log/03_backupMX2_NasHome.log"
+  "/var/log/03_backupMX2_NasCore.log"
   "/var/log/04_backupMail.log"
-  "/var/log/05_backupNasHome_WebMail.log"
+  "/var/log/05_backupNasCore_WebMail.log"
 )
 
 MIN_SIZE="${MIN_SIZE:-1000}"
