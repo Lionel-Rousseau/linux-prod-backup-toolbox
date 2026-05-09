@@ -7,7 +7,7 @@
 # and only sends mail when something is wrong.
 #
 # Endpoints driven from this script:
-#   - nas-home          (Synology DSM, ash shell, ssh port 1249)
+#   - nas-core          (Synology DSM, ash shell, ssh port 1249)
 #   - web-mail          (Ubuntu LTS, Internet-facing, ssh port 1622)
 #   - mx-secondary      (Ubuntu LTS, secondary MX + offsite, ssh port 1622)
 #
@@ -88,7 +88,7 @@ fetch_remote_log() {
 
   rm -f "$tmp_path"
 
-  if [[ "$host" == "nas-home.example.net" ]]; then
+  if [[ "$host" == "nas-core.example.net" ]]; then
     # Synology: scp to a Synology can be flaky; cat-over-ssh is safer.
     if ssh -q -T -o LogLevel=ERROR -p "$port" \
       -o BatchMode=yes \
@@ -195,8 +195,8 @@ sync_support_files() {
   sync_file_to_host "mx-secondary.example.org" "$BASE/luks_functions.sh" "/root/backup-orchestrator/luks_functions.sh" "700" "scp"
   sync_file_to_host "mx-secondary.example.org" "$BASE/.smtp_pass"        "/root/backup-orchestrator/.smtp_pass"        "600" "scp"
 
-  sync_file_to_host "nas-home.example.net" "$BASE/luks_functions.sh" "/root/backup-orchestrator/luks_functions.sh" "700" "pipe"
-  sync_file_to_host "nas-home.example.net" "$BASE/.smtp_pass"        "/root/backup-orchestrator/.smtp_pass"        "600" "pipe"
+  sync_file_to_host "nas-core.example.net" "$BASE/luks_functions.sh" "/root/backup-orchestrator/luks_functions.sh" "700" "pipe"
+  sync_file_to_host "nas-core.example.net" "$BASE/.smtp_pass"        "/root/backup-orchestrator/.smtp_pass"        "600" "pipe"
 
   log "OK support_files_sync"
 }
@@ -392,22 +392,22 @@ main() {
 
   # ---- Job 01: NAS daily replication to remote nodes ----
   run_job \
-    "01_nas_home_daily" \
-    "nas-home.example.net" \
+    "01_nas_core_daily" \
+    "nas-core.example.net" \
     "1249" \
     "10800" \
     "FINISH :" \
-    "/var/log/backupNasHome.log,/var/log/backupWebApp.log" \
+    "/var/log/backupNasCore.log,/var/log/backupWebApp.log" \
     "bash /volume1/NetBackup/backup.sh"
 
-  # ---- Job 02: web-mail node cross-replicates to mx-secondary and nas-home ----
+  # ---- Job 02: web-mail node cross-replicates to mx-secondary and nas-core ----
   run_job \
     "02_web_mail_daily" \
     "web-mail.example.org" \
     "1622" \
     "9000" \
     "FINISH :" \
-    "/var/log/backupWebMail_MX2.log,/var/log/backupWebMail_NasHome.log" \
+    "/var/log/backupWebMail_MX2.log,/var/log/backupWebMail_NasCore.log" \
     "/bin/backup"
 
   # ---- Job 03: web app folder + monthly DB archive ----
@@ -420,20 +420,20 @@ main() {
     "/var/log/backupWebApp.log" \
     "/usr/bin/backup_webapp.sh"
 
-  # ---- Job 04: mx-secondary cross-replicates to web-mail and nas-home ----
+  # ---- Job 04: mx-secondary cross-replicates to web-mail and nas-core ----
   run_job \
     "04_mx_secondary_daily" \
     "mx-secondary.example.org" \
     "1622" \
     "9000" \
     "FINISH :" \
-    "/var/log/02_backupMX2_WebMail.log,/var/log/03_backupMX2_NasHome.log,/var/log/04_backupMail.log,/var/log/05_backupNasHome_WebMail.log" \
+    "/var/log/02_backupMX2_WebMail.log,/var/log/03_backupMX2_NasCore.log,/var/log/04_backupMail.log,/var/log/05_backupNasCore_WebMail.log" \
     "/usr/bin/backup"
 
   # ---- Job 05: NAS mirrors the consolidated set to a detachable USB ----
   run_job \
-    "05_nas_home_usb" \
-    "nas-home.example.net" \
+    "05_nas_core_usb" \
+    "nas-core.example.net" \
     "1249" \
     "14400" \
     "Script execution took" \
