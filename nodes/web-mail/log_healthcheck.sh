@@ -21,7 +21,7 @@
 set -Eeuo pipefail
 
 LOGS=(
-  "/var/log/backupWebMail_NasHome.log"
+  "/var/log/backupWebMail_NasCore.log"
   "/var/log/backupWebMail_MX2.log"
   "/var/log/backupWebApp.log"
 )
