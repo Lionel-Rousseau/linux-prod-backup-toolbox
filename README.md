@@ -97,7 +97,7 @@ linux-prod-backup-toolbox/
 A nightly orchestrator running on a hardened internal VM (Debian) connects
 over SSH to four backup endpoints — the Synology NAS at office, the
 Internet-facing combined web + mail server, the secondary MX, and a
-Raspberry-Pi-driven home node. Each endpoint runs its own backup logic.
+Raspberry-Pi-driven node. Each endpoint runs its own backup logic.
 The orchestrator does three things on its own: it **synchronizes the
 shared library and credentials** to every node with SHA-256 verification
 to prevent silent drift, it **launches each remote backup with a deadline
