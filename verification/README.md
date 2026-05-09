@@ -38,7 +38,7 @@ Two example crontab entries (also in [`../examples/crontab.example`](../examples
 
 ## Exit codes
 
-Both scripts use POSIX-friendly exit codes:
+Both scripts use exit codes:
 
 | Code | Meaning                                                             |
 |------|---------------------------------------------------------------------|
