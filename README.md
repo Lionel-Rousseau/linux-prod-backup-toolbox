@@ -62,11 +62,11 @@ linux-prod-backup-toolbox/
 │   ├── luks_functions.sh               Idempotent LUKS open/close library
 │   ├── backup-nightly.service          Systemd unit
 │   ├── backup-nightly.timer            Systemd timer (00:30 daily)
-│   └── .smtp_pass.example              SMTP password file basefile
+│   └── .smtp_pass.example              SMTP password file template
 ├── nodes/                              Per-node backup logic
 │   ├── nas-core/                       Synology NAS (DSM 7.3.x, ash shell)
 │   │   ├── backup.sh                   Nightly script
-│   │   └── mv2usb.sh                   Daily mirror to detachable 8To USB
+│   │   └── mv2usb.sh                   Daily mirror to detachable 8TB USB
 │   ├── web-mail/                       Web + mail Server (Ubuntu LTS)
 │   │   ├── backup                      System backup
 │   │   ├── backup_webapp.sh            Web & MySQL daily backups
