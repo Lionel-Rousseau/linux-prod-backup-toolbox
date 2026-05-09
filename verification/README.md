@@ -23,7 +23,7 @@ Two example crontab entries (also in [`../examples/crontab.example`](../examples
 ```cron
 # Weekly rsync sample-and-diff against the offsite copy on mx-secondary
 30 06 * * 1  /usr/local/bin/restore-test-rsync.sh \
-               --source root@mx-secondary.example.org:/home/Backup_NasHome/some/sample/ \
+               --source root@mx-secondary.example.org:/home/Backup_NasCore/some/sample/ \
                --ssh-port 1622 \
                --sample-files 30 \
                --mail-on-fail
