@@ -64,7 +64,7 @@ linux-prod-backup-toolbox/
 │   ├── backup-nightly.timer            Systemd timer (00:30 daily)
 │   └── .smtp_pass.example              SMTP password file basefile
 ├── nodes/                              Per-node backup logic
-│   ├── nas-home/                       Synology NAS (DSM 7.3.x, ash shell)
+│   ├── nas-core/                       Synology NAS (DSM 7.3.x, ash shell)
 │   │   ├── backup.sh                   Nightly script
 │   │   └── mv2usb.sh                   Daily mirror to detachable 8To USB
 │   ├── web-mail/                       Web + mail Server (Ubuntu LTS)
@@ -75,8 +75,8 @@ linux-prod-backup-toolbox/
 │   ├── mx-secondary/                   secondary MX + offsite storage (Ubuntu LTS)
 │   │   ├── backup                      System backup
 │   │   └── log_healthcheck.sh          Log checks
-│   └── raspberry-pi/                   home-automation Pi nodes
-│       └── backup_image.sh             Imaging script
+│   └── raspberry-pi/                   IoT-automation Pi nodes
+│       └── backup_image.sh             Imaging script example
 ├── verification/                       restoration test scripts
 │   ├── README.md
 │   ├── restore-test-rsync.sh           pulls a sample from a backup, diffs it
