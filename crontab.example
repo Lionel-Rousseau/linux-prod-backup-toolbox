@@ -1,0 +1,40 @@
+# crontab.example — minimal scheduling without systemd
+# ----------------------------------------------------------------------------
+# Use this as a starting point if you prefer cron over systemd timers.
+# Install with:  crontab -u root crontab.example
+# (review carefully first — paths and times almost certainly need adjusting)
+# ----------------------------------------------------------------------------
+
+# m  h  dom mon dow  command
+# === Orchestrator ============================================================
+# Main nightly campaign — drives every node's backup script over SSH.
+30  0  *   *   *    /root/backup-orchestrator/backup-nightly.sh
+
+# === Per-node log healthcheck ================================================
+# Independent verification that the night's logs landed correctly.
+# Runs a few hours AFTER the orchestrator's expected completion.
+0   6  *   *   *    /root/backup-orchestrator/log_healthcheck.sh
+
+# === Weekly verification (the silent-corruption canary) ======================
+# Sample-and-diff a subtree of the offsite mirror against the source.
+30  6  *   *   1    /usr/local/bin/restore-test-rsync.sh \
+                      --source root@mx-secondary.example.org:/home/Backup_NasHome/canary/ \
+                      --ssh-port 1622 \
+                      --sample-files 30 \
+                      --mail-on-fail
+
+# Replay the latest daily SQL dump on a throwaway DB.
+0   7  *   *   1    /usr/local/bin/restore-test-mysql.sh \
+                      --dump $(ls -t /var/backups/sql/Backup-*.sql 2>/dev/null | head -1) \
+                      --defaults /root/.my-restore-tester.cnf \
+                      --db restore_test \
+                      --expect-table orders=1 \
+                      --expect-table customers=1 \
+                      --mail-on-fail
+
+# === Weekly Security Onion config snapshot (extras) ==========================
+30  4  *   *   0    /usr/local/sbin/security-onion-config-backup.sh
+
+# === RPi nightly image push (per Pi node) ====================================
+# Adjust the time per Pi to spread load on the receiving end.
+15  2  *   *   *    /root/scripts/backup_image.sh
