@@ -364,10 +364,10 @@ plain_section() {
 # Multi-section job: NAS datasets cross-replicated to web-mail
 # ============================================================================
 run_nas_backups_on_web_mail() {
-  local log_file="/var/log/05_backupNasHome_WebMail.log"
+  local log_file="/var/log/05_backupNasCore_WebMail.log"
   local start_time
 
-  CURRENT_JOB_NAME="NasHome_on_WebMail"
+  CURRENT_JOB_NAME="NasCore_on_WebMail"
   start_time="$(date +%s)"
   begin_job "$log_file"
 
@@ -382,8 +382,8 @@ run_nas_backups_on_web_mail() {
     "/home/Backup_WebApp.crypt" \
     "Backup_WebApp_crypt" \
     "$CTRL_WEB_MAIL_HOST" \
-    "/home/Backup_NasHome_WebApp.crypt" \
-    "Backup_NasHome_WebApp_crypt" \
+    "/home/Backup_NasCore_WebApp.crypt" \
+    "Backup_NasCore_WebApp_crypt" \
     "--delay-updates"
 
   plain_section \
@@ -395,16 +395,16 @@ run_nas_backups_on_web_mail() {
     "--delay-updates"
 
   dual_luks_section \
-    "Backup NasHome on web-mail" \
+    "Backup NasCore on web-mail" \
     "$log_file" \
     "ssh -q -o LogLevel=ERROR -p 1622 -T -x" \
     "/home/tmp_crypt/" \
     "root@web-mail.example.org:/home/tmp_crypt/" \
-    "/home/NasHome.crypt" \
-    "NasHome_crypt" \
+    "/home/NasCore.crypt" \
+    "NasCore_crypt" \
     "$CTRL_WEB_MAIL_HOST" \
-    "/home/Backup_NasHome.crypt" \
-    "Backup_NasHome_crypt" \
+    "/home/Backup_NasCore.crypt" \
+    "Backup_NasCore_crypt" \
     "--delay-updates"
 
   echo -e "\r\r============ END Backup on web-mail ============\r" >>"$log_file" 2>&1
@@ -494,8 +494,8 @@ run_rsync_with_remote_luks \
 
 # ---- mx-secondary rootfs → nas-core (LAN) ----
 run_rsync_plain \
-  "MX2_on_NasHome" \
-  "/var/log/03_backupMX2_NasHome.log" \
+  "MX2_on_NasCore" \
+  "/var/log/03_backupMX2_NasCore.log" \
   "ssh -q -o LogLevel=ERROR -p 1249 -T -x" \
   "/" \
   "root@nas-core.example.net:/volume1/MX2/" \
@@ -503,7 +503,7 @@ run_rsync_plain \
 
 # ---- vmail spool → nas-core (decrypt-on-the-fly via local LUKS) ----
 run_rsync_with_local_luks \
-  "VMAIL_on_NasHome" \
+  "VMAIL_on_NasCore" \
   "/var/log/04_backupMail.log" \
   "ssh -q -o LogLevel=ERROR -p 1249 -T -x" \
   "/home/tmp_crypt/home/vmail/" \
