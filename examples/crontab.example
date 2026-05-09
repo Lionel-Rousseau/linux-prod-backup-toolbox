@@ -18,7 +18,7 @@
 # === Weekly verification (the silent-corruption canary) ======================
 # Sample-and-diff a subtree of the offsite mirror against the source.
 30  6  *   *   1    /usr/local/bin/restore-test-rsync.sh \
-                      --source root@mx-secondary.example.org:/home/Backup_NasHome/canary/ \
+                      --source root@mx-secondary.example.org:/home/Backup_NasCore/canary/ \
                       --ssh-port 1622 \
                       --sample-files 30 \
                       --mail-on-fail
