@@ -1,0 +1,41 @@
+# Secrets — never commit
+.smtp_pass
+*.smtp_pass
+.env
+*.env
+!*.env.example
+!.env.example
+
+# LUKS keys and passphrases
+*.key
+*.pwd
+.ash
+keys/
+secrets/
+
+# SSH material
+id_rsa
+id_ed25519
+id_ecdsa
+*.pem
+known_hosts.local
+
+# Local logs and runtime artifacts
+*.log
+log/
+logs/
+run/
+tmp/
+*.tmp
+
+# Editor and OS noise
+.vscode/
+.idea/
+.DS_Store
+*~
+*.swp
+*.swo
+
+# Backup files (the irony is not lost on me)
+*.bak
+*.orig
