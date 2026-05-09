@@ -5,12 +5,12 @@
 # Runs on the secondary MX (Ubuntu LTS, OVH-hosted, geographically distinct
 # datacentre from web-mail). This node hosts:
 #   * the secondary MX (priority 20) for mail continuity
-#   * the offsite LUKS backup containers populated by web-mail and nas-home
+#   * the offsite LUKS backup containers populated by web-mail and nas-core
 #
 # It owns three responsibilities:
 #   1. Mirror the *web-mail* node's rootfs to its own disk (LUKS) and to
-#      the home NAS (LAN).
-#   2. Pull the vmail spool from web-mail to home NAS, decrypted on-the-fly
+#      the core NAS (LAN).
+#   2. Pull the vmail spool from web-mail to core NAS, decrypted on-the-fly
 #      through a local LUKS volume that was populated earlier by web-mail.
 #   3. Cross-replicate the consolidated NAS datasets to web-mail (dual-LUKS
 #      pattern: source on a local LUKS, destination on a remote LUKS).
@@ -145,7 +145,7 @@ local_prepare_luks() {
   CURRENT_LOCAL_LUKS_OPEN=1
 
   prepare_luks_mount \
-    "ssh -q -T -o LogLevel=ERROR nas-home 'cat /volume1/NetBackup/.ash'" \
+    "ssh -q -T -o LogLevel=ERROR nas-core 'cat /volume1/NetBackup/.ash'" \
     "$crypt_file" \
     "$mapper_name" \
     "/home/tmp_crypt"
@@ -177,7 +177,7 @@ remote_prepare_luks() {
 set -Eeuo pipefail
 LOG_FILE="/var/log/${mapper_name}.remote.log"
 . /root/backup-orchestrator/luks_functions.sh
-prepare_luks_mount "ssh -q -T -o LogLevel=ERROR nas-home 'cat /volume1/NetBackup/.ash'" "$crypt_file" "$mapper_name" "/home/tmp_crypt"
+prepare_luks_mount "ssh -q -T -o LogLevel=ERROR nas-core 'cat /volume1/NetBackup/.ash'" "$crypt_file" "$mapper_name" "/home/tmp_crypt"
 EOF
 }
 
@@ -492,22 +492,22 @@ run_rsync_with_remote_luks \
   "Backup_MX2_crypt" \
   "${MX2_ROOT_RSYNC_ARGS[@]}"
 
-# ---- mx-secondary rootfs → nas-home (LAN) ----
+# ---- mx-secondary rootfs → nas-core (LAN) ----
 run_rsync_plain \
   "MX2_on_NasHome" \
   "/var/log/03_backupMX2_NasHome.log" \
   "ssh -q -o LogLevel=ERROR -p 1249 -T -x" \
   "/" \
-  "root@nas-home.example.net:/volume1/MX2/" \
+  "root@nas-core.example.net:/volume1/MX2/" \
   "${MX2_TO_NAS_RSYNC_ARGS[@]}"
 
-# ---- vmail spool → nas-home (decrypt-on-the-fly via local LUKS) ----
+# ---- vmail spool → nas-core (decrypt-on-the-fly via local LUKS) ----
 run_rsync_with_local_luks \
   "VMAIL_on_NasHome" \
   "/var/log/04_backupMail.log" \
   "ssh -q -o LogLevel=ERROR -p 1249 -T -x" \
   "/home/tmp_crypt/home/vmail/" \
-  "root@nas-home.example.net:/volume1/Mail/" \
+  "root@nas-core.example.net:/volume1/Mail/" \
   "/home/Backup_WebMail.crypt" \
   "Backup_WebMail_crypt" \
   "${VMAIL_RSYNC_ARGS[@]}"
