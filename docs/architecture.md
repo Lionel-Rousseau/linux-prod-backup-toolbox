@@ -22,6 +22,9 @@ the nightly run; every other host listens. SSH ports are non-default
 naturally not used as a primary defense. The main defense is based on key-only authentication,
 disabled root password, and `fail2ban` watching `auth.log`. DC stands
 for Data Center, each one is located in France and at different locations.
+OVH dedicated servers run software RAID 1 (2 × 4 TB → ~4 TB usable) at the hardware 
+layer. RAID provides resilience against single-disk failure; it is not a substitute 
+for the cross-site backup chain described in this document.
 
 ## Data flow (nightly)
 
