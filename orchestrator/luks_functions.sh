@@ -24,13 +24,13 @@
 #   ALERT_SMTP_USER        SMTP authentication user
 #   ALERT_SMTP_PASSWORD_FILE  path to a file containing the SMTP password
 #   BACKUP_MAPPER_REGEX    regex matching mappers we are allowed to close
-#   MOUNT_POINT_DEFAULT    where to mount opened containers (default: /home/tmp_crypt)
+#   MOUNT_POINT_DEFAULT    where to mount opened containers (default: /core/tmp_crypt)
 #   DOCKER_BIN             path to docker (Synology fallback for swaks)
 #
 # License: MIT — see LICENSE in the repository root.
 # ----------------------------------------------------------------------------
 
-BACKUP_MAPPER_REGEX="${BACKUP_MAPPER_REGEX:-^(Backup_.*_crypt|NasHome_crypt)$}"
+BACKUP_MAPPER_REGEX="${BACKUP_MAPPER_REGEX:-^(Backup_.*_crypt|NasCore_crypt)$}"
 MOUNT_POINT_DEFAULT="${MOUNT_POINT_DEFAULT:-/home/tmp_crypt}"
 PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:${PATH:-}"
 DOCKER_BIN="${DOCKER_BIN:-/usr/local/bin/docker}"
@@ -217,10 +217,10 @@ cleanup_tmp_crypt_and_backup_mappers() {
 
 # Open a LUKS container and mount it on $mount_point.
 # `key_cmd` is a shell command that prints the key on stdout — typically
-# `ssh -q nas-home 'cat /volume1/NetBackup/.ash'`. It is evaluated and piped
+# `ssh -q nas-core 'cat /volume1/NetBackup/.ash'`. It is evaluated and piped
 # into cryptsetup on stdin so the key never touches disk on the local host.
 prepare_luks_mount() {
-  local key_cmd="$1"                 # e.g. "ssh nas-home 'cat /volume1/NetBackup/.ash'"
+  local key_cmd="$1"                 # e.g. "ssh nas-core 'cat /volume1/NetBackup/.ash'"
   local crypt_file="$2"              # e.g. /home/Backup_WebApp.crypt
   local mapper_name="$3"             # e.g. Backup_WebApp_crypt
   local mount_point="${4:-$MOUNT_POINT_DEFAULT}"
