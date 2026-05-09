@@ -5,7 +5,7 @@
 # Runs on the Internet-facing web + mail server (Ubuntu LTS). Cross-
 # replicates the entire root filesystem (with sensible exclusions) to:
 #   * the secondary MX, on a LUKS volume opened just-in-time
-#   * the home NAS, in cleartext (LAN side, accessed over Tailscale)
+#   * the Core NAS, in cleartext (LAN side, accessed over Tailscale)
 #
 # This is the second layer of redundancy: the web-mail server is the only
 # host that can serve traffic from the Internet, so its full state must
@@ -94,7 +94,7 @@ remote_prepare_luks() {
 set -Eeuo pipefail
 LOG_FILE="/var/log/${mapper_name}.remote.log"
 . /root/backup-orchestrator/luks_functions.sh
-prepare_luks_mount "ssh -q -T -o LogLevel=ERROR nas-home 'cat /volume1/NetBackup/.ash'" "$crypt_file" "$mapper_name" "/home/tmp_crypt"
+prepare_luks_mount "ssh -q -T -o LogLevel=ERROR nas-core 'cat /volume1/NetBackup/.ash'" "$crypt_file" "$mapper_name" "/home/tmp_crypt"
 EOF
 }
 
@@ -265,10 +265,10 @@ run_rsync_daemon_with_remote_luks \
   "Backup_WebMail_crypt" \
   "${WEB_MAIL_ROOT_RSYNC_ARGS[@]}"
 
-# ---- Web-mail rootfs → nas-home (LAN, no LUKS — internal network) ----
+# ---- Web-mail rootfs → nas-core (LAN, no LUKS — internal network) ----
 run_rsync_plain \
   "WebMail_on_NasHome" \
   "/var/log/backupWebMail_NasHome.log" \
   "/" \
-  "root@nas-home.example.net:/volume1/WebMail/" \
+  "root@nas-core.example.net:/volume1/WebMail/" \
   "${WEB_MAIL_ROOT_RSYNC_ARGS[@]}"
