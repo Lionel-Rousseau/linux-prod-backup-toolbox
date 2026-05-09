@@ -204,7 +204,7 @@ in production since 2018. The code, design choices, and operational
 decisions, including the verification loop, the LUKS key custody
 pattern, and the multi-host orchestration, are the author's,
 accumulated over at least seven years of running this stack. The work of
-anonymising, restructuring, and documenting the existing artefacts
+anonymising, restructuring, and documenting the existing codes
 for public release was assisted by Claude (Anthropic). Every file
 was reviewed and validated by the author before publication.
 
