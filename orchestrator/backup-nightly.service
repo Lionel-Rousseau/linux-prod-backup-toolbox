@@ -1,0 +1,20 @@
+[Unit]
+Description=Nightly backup orchestrator
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/root/backup-orchestrator
+ExecStart=/root/backup-orchestrator/backup-nightly.sh
+
+# Hardening (uncomment progressively after validating they don't break the run)
+# NoNewPrivileges=yes
+# PrivateTmp=yes
+# ProtectSystem=strict
+# ReadWritePaths=/root/backup-orchestrator /var/log /var/lock
+# ProtectHome=read-only
+# ProtectKernelTunables=yes
+# ProtectKernelModules=yes
+# ProtectControlGroups=yes
