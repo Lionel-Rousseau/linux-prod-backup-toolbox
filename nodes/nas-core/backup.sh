@@ -1,6 +1,6 @@
 #!/bin/bash
 # ----------------------------------------------------------------------------
-# nodes/nas-home/backup.sh — nightly backup orchestration on the Synology NAS
+# nodes/nas-core/backup.sh — nightly backup orchestration on the Synology NAS
 # ----------------------------------------------------------------------------
 # Runs on the Synology NAS (DSM 7.3.x). Driven by the central orchestrator
 # over SSH. Replicates each protected dataset to the encrypted destination
@@ -25,7 +25,7 @@ HOST_FQDN="$(hostname -f 2>/dev/null || hostname)"
 
 # ---- Alert mail configuration (pulled from environment, with sane defaults) ----
 ALERT_TO="${ALERT_TO:-admin@example.org}"
-ALERT_FROM="${ALERT_FROM:-root@nas-home.example.net}"
+ALERT_FROM="${ALERT_FROM:-root@nas-core.example.net}"
 ALERT_SMTP_SERVER="${ALERT_SMTP_SERVER:-web-mail.example.org}"
 ALERT_SMTP_PORT="${ALERT_SMTP_PORT:-465}"
 ALERT_SMTP_USER="${ALERT_SMTP_USER:-admin@example.org}"
@@ -135,7 +135,7 @@ remote_prepare_luks() {
 set -Eeuo pipefail
 LOG_FILE="/var/log/${mapper_name}.remote.log"
 . /root/backup-orchestrator/luks_functions.sh
-prepare_luks_mount "ssh -q -T -o LogLevel=ERROR nas-home 'cat /volume1/NetBackup/.ash'" "$crypt_file" "$mapper_name" "/home/tmp_crypt"
+prepare_luks_mount "ssh -q -T -o LogLevel=ERROR nas-core 'cat /volume1/NetBackup/.ash'" "$crypt_file" "$mapper_name" "/home/tmp_crypt"
 EOF
 }
 
@@ -338,15 +338,15 @@ trap 'error_handler "$LINENO" "$?"' ERR
 # (offsite) and to the web-mail server (also offsite, geographically
 # distinct OVH datacentre). LUKS containers on both destinations.
 
-# ---- NasHome dataset → mx-secondary ----
+# ---- NasCore dataset → mx-secondary ----
 run_rsync_daemon_with_remote_luks \
-  "NasHome" \
-  "/var/log/backupNasHome.log" \
+  "NasCore" \
+  "/var/log/backupNasCore.log" \
   "/volume1/NetBackup/" \
-  "root@mx-secondary.example.org::NasHome" \
+  "root@mx-secondary.example.org::NasCore" \
   "mx-secondary" \
-  "/home/NasHome.crypt" \
-  "NasHome_crypt" \
+  "/home/NasCore.crypt" \
+  "NasCore_crypt" \
   --exclude '@eaDir'
 
 # ---- WebApp dataset → mx-secondary ----
