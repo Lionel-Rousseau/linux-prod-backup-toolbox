@@ -1,6 +1,6 @@
 #!/bin/ash
 # ----------------------------------------------------------------------------
-# nodes/nas-home/mv2usb.sh — daily mirror of selected datasets to USB
+# nodes/nas-core/mv2usb.sh — daily mirror of selected datasets to USB
 # ----------------------------------------------------------------------------
 # Runs on the Synology NAS (DSM 7.3.x, ash shell — POSIX-style, NOT bash).
 # Mirrors a curated set of consolidated datasets to a detachable USB drive
