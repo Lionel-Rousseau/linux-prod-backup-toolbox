@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # ----------------------------------------------------------------------------
-# nodes/web-mail/log_healthcheck.sh — out-of-band log integrity verifier
+# nodes/web-mail/log_healthcheck.sh - out-of-band log integrity verifier
 # ----------------------------------------------------------------------------
-# Belt-and-braces complement to the orchestrator's outcome scan: this
+# Fail-safe complement to the orchestrator's outcome scan: this
 # script runs locally on the web-mail node a few hours after the nightly
 # campaign should have finished, and verifies for every backup log:
 #   * the file exists and was modified today
@@ -11,11 +11,10 @@
 #
 # It exists because the orchestrator's checks happen *during* the run.
 # A log corrupted *after* the run completes (filesystem issue, log
-# rotation gone wrong, etc.) is invisible to it. This independent pass
-# catches those.
+# rotation gone wrong, etc.) is invisible to it. This pass catches it.
 #
 # Sends a mail only on failure.
-# License: MIT — see LICENSE in the repository root.
+# License: MIT - see LICENSE in the repository root.
 # ----------------------------------------------------------------------------
 
 set -Eeuo pipefail
@@ -78,7 +77,7 @@ done
 if [ "${#PROBLEMS[@]}" -gt 0 ]; then
   body=$(
     {
-      printf '%s\n\n' "$ORIGIN log healthcheck — $TODAY_DATE"
+      printf '%s\n\n' "$ORIGIN log healthcheck - $TODAY_DATE"
       printf '%s\n' "${PROBLEMS[@]}"
     }
   )
