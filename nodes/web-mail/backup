@@ -1,6 +1,6 @@
 #!/bin/bash
 # ----------------------------------------------------------------------------
-# nodes/web-mail/backup — nightly backup orchestration on the web+mail node
+# nodes/web-mail/backup - nightly backup orchestration on the web+mail node
 # ----------------------------------------------------------------------------
 # Runs on the Internet-facing web + mail server (Ubuntu LTS). Cross-
 # replicates the entire root filesystem (with sensible exclusions) to:
@@ -11,7 +11,7 @@
 # host that can serve traffic from the Internet, so its full state must
 # be reproducible elsewhere if the underlying OVH machine fails.
 #
-# License: MIT — see LICENSE in the repository root.
+# License: MIT - see LICENSE in the repository root.
 # ----------------------------------------------------------------------------
 
 set -Eeuo pipefail
@@ -52,7 +52,7 @@ WEB_MAIL_ROOT_RSYNC_ARGS=(
 )
 
 # ============================================================================
-# Logging primitives (same shape on every node)
+# Logging (same shape on every node)
 # ============================================================================
 set_log_file() {
   CURRENT_LOG_FILE="$1"
@@ -116,7 +116,7 @@ EOF
 }
 
 # ============================================================================
-# rsync wrapper (rc=24 swallowed)
+# rsync wrapper (rc=24 ignored)
 # ============================================================================
 run_rsync_checked() {
   local log_file="$1"
@@ -136,7 +136,7 @@ run_rsync_checked() {
 }
 
 # ============================================================================
-# Job primitives
+# Job definition
 # ============================================================================
 run_rsync_daemon_with_remote_luks() {
   local job_name="$1"
@@ -265,7 +265,7 @@ run_rsync_daemon_with_remote_luks \
   "Backup_WebMail_crypt" \
   "${WEB_MAIL_ROOT_RSYNC_ARGS[@]}"
 
-# ---- Web-mail rootfs → nas-core (LAN, no LUKS — internal network) ----
+# ---- Web-mail rootfs → nas-core (LAN, no LUKS, internal network) ----
 run_rsync_plain \
   "WebMail_on_NasHome" \
   "/var/log/backupWebMail_NasHome.log" \
