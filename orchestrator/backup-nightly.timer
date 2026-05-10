@@ -7,9 +7,9 @@ Persistent=true
 Unit=backup-nightly.service
 
 # RandomizedDelaySec=0
-# Set RandomizedDelaySec to a small value (e.g. 300) if multiple
-# orchestrators in your fleet should not all start at exactly the same
-# minute. Single-host setups can leave it at 0.
+# Set RandomizedDelaySec to a small value (e.g. 300) in case of multiple
+# orchestrators, they should not all start at the same time. 
+# Single-host setups can leave it at 0.
 
 [Install]
 WantedBy=timers.target
