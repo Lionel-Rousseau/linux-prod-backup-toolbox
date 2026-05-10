@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ----------------------------------------------------------------------------
-# verification/restore-test-rsync.sh — automated sample-and-diff restore
+# verification/restore-test-rsync.sh - automated sample-and-diff restore
 # ----------------------------------------------------------------------------
 # Pulls a sample subtree from one of our backup destinations into a
 # scratch directory, compares it to the source via `rsync -ainv`, and
@@ -8,7 +8,7 @@
 #
 # This is *not* a full disaster-recovery drill. It is the lightweight
 # automated companion of the manual procedure documented in
-# docs/restoration-runbook.md — the one we run by hand twice a month.
+# docs/restoration-runbook.md, the one we run by hand twice a month.
 # Designed to be scheduled weekly via cron / systemd timer to catch
 # silent corruption between drills.
 #
@@ -26,7 +26,7 @@
 #                         --sample-files 20 \
 #                         [--mail-on-fail]
 #
-# License: MIT — see LICENSE in the repository root.
+# License: MIT - see LICENSE in the repository root.
 # ----------------------------------------------------------------------------
 
 set -Eeuo pipefail
@@ -88,7 +88,7 @@ exec > >(tee -a "$LOG_FILE") 2>&1
 
 echo
 echo "================================================================"
-echo "restore-test-rsync — $(date)"
+echo "restore-test-rsync - $(date)"
 echo "  source:        $SOURCE"
 echo "  scratch:       $SCRATCH"
 echo "  ssh port:      $SSH_PORT"
@@ -138,7 +138,7 @@ if ! rsync -ah --partial --human-readable --stats \
   "$SOURCE" "$SCRATCH/"; then
   msg="restore-test-rsync FAILED: initial pull from $SOURCE returned non-zero"
   echo "$msg"
-  send_alert_mail "[ALERT] restore-test-rsync — pull failed" "$msg"
+  send_alert_mail "[ALERT] restore-test-rsync - pull failed" "$msg"
   exit 1
 fi
 
@@ -204,7 +204,7 @@ if [ "$SAMPLE_FILES" -gt 0 ]; then
     if [ "$failed" -gt 0 ]; then
       msg="restore-test-rsync detected $failed sha256 mismatch(es) against $SOURCE"
       echo "$msg"
-      send_alert_mail "[ALERT] restore-test-rsync — sha256 mismatch" "$msg"
+      send_alert_mail "[ALERT] restore-test-rsync - sha256 mismatch" "$msg"
       exit 1
     fi
     echo "OK: sha256 spot check passed (${#candidates[@]} files)"
@@ -216,7 +216,7 @@ echo
 echo "[4/4] OK"
 echo "Sample size: $(du -sh "$SCRATCH" | awk '{print $1}')"
 echo "================================================================"
-echo "restore-test-rsync — PASS"
+echo "restore-test-rsync - PASS"
 echo "================================================================"
 echo
 
