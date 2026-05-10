@@ -27,7 +27,7 @@
 #   rpi-image-luks-wrapper.sh open  --container /home/RpiBackup.crypt --mapper RpiBackup_crypt --mountpoint /home/RpiBackup
 #   rpi-image-luks-wrapper.sh close --mapper RpiBackup_crypt --mountpoint /home/RpiBackup
 #
-# License: MIT — see LICENSE in the repository root.
+# License: MIT - see LICENSE in the repository root.
 # ----------------------------------------------------------------------------
 
 set -Eeuo pipefail
@@ -156,7 +156,7 @@ cmd_init() {
   cryptsetup close "$TMP_MAPPER"
 
   echo
-  echo "[init] DONE. Container created — key slot 0 holds the output of:"
+  echo "[init] DONE. Container created - key slot 0 holds the output of:"
   echo "  $KEY_CMD"
   echo
   echo "  Optional: add a recovery passphrase in case the key holder is"
