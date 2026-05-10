@@ -7,7 +7,7 @@
 #    (mounted leftover, mapper still open) before doing anything else.
 #  * On any failure path, attempt to close what we opened so a crashed
 #    run never leaves a decrypted volume mounted.
-#  * Never persist the LUKS key file to disk on the host — read it from
+#  * Never persist the LUKS key file to disk on the host, read it from
 #    a `key_cmd` that fetches it just-in-time over SSH from a third host.
 #
 # Sourced by every node that needs to open a LUKS container during a
@@ -27,7 +27,7 @@
 #   MOUNT_POINT_DEFAULT    where to mount opened containers (default: /core/tmp_crypt)
 #   DOCKER_BIN             path to docker (Synology fallback for swaks)
 #
-# License: MIT — see LICENSE in the repository root.
+# License: MIT - see LICENSE in the repository root.
 # ----------------------------------------------------------------------------
 
 BACKUP_MAPPER_REGEX="${BACKUP_MAPPER_REGEX:-^(Backup_.*_crypt|NasCore_crypt)$}"
@@ -216,7 +216,7 @@ cleanup_tmp_crypt_and_backup_mappers() {
 }
 
 # Open a LUKS container and mount it on $mount_point.
-# `key_cmd` is a shell command that prints the key on stdout — typically
+# `key_cmd` is a shell command that prints the key on stdout, typically
 # `ssh -q nas-core 'cat /volume1/NetBackup/.ash'`. It is evaluated and piped
 # into cryptsetup on stdin so the key never touches disk on the local host.
 prepare_luks_mount() {
