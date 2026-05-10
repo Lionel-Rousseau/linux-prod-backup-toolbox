@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 # ----------------------------------------------------------------------------
-# nodes/mx-secondary/log_healthcheck.sh — out-of-band log integrity verifier
+# nodes/mx-secondary/log_healthcheck.sh - out-of-band log integrity verifier
 # ----------------------------------------------------------------------------
-# Same logic as nodes/web-mail/log_healthcheck.sh — verifies that the
+# Same logic as nodes/web-mail/log_healthcheck.sh verifies that the
 # nightly backup logs on this node are present, dated today, contain the
 # success marker, and meet a minimum size. Sends mail only on failure.
 #
 # Run from cron a few hours after the orchestrator's expected completion,
 # typically 06:00.
 #
-# License: MIT — see LICENSE in the repository root.
+# License: MIT - see LICENSE in the repository root.
 # ----------------------------------------------------------------------------
 
 set -Eeuo pipefail
@@ -70,7 +70,7 @@ done
 if [ "${#PROBLEMS[@]}" -gt 0 ]; then
   body=$(
     {
-      printf '%s\n\n' "$ORIGIN log healthcheck — $TODAY_DATE"
+      printf '%s\n\n' "$ORIGIN log healthcheck - $TODAY_DATE"
       printf '%s\n' "${PROBLEMS[@]}"
     }
   )
