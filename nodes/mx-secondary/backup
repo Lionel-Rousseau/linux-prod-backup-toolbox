@@ -1,6 +1,6 @@
 #!/bin/bash
 # ----------------------------------------------------------------------------
-# nodes/mx-secondary/backup — nightly backup orchestration on the secondary MX
+# nodes/mx-secondary/backup - nightly backup orchestration on the secondary MX
 # ----------------------------------------------------------------------------
 # Runs on the secondary MX (Ubuntu LTS, OVH-hosted, geographically distinct
 # datacentre from web-mail). This node hosts:
@@ -15,11 +15,11 @@
 #   3. Cross-replicate the consolidated NAS datasets to web-mail (dual-LUKS
 #      pattern: source on a local LUKS, destination on a remote LUKS).
 #
-# This is where the dual-LUKS section pattern lives — used when the data
+# This is where the dual-LUKS section pattern lives, used when the data
 # at rest must remain encrypted on both ends, with the crossover happening
 # only inside an encrypted SSH tunnel.
 #
-# License: MIT — see LICENSE in the repository root.
+# License: MIT - see LICENSE in the repository root.
 # ----------------------------------------------------------------------------
 
 set -Eeuo pipefail
@@ -88,7 +88,7 @@ VMAIL_RSYNC_ARGS=(
 )
 
 # ============================================================================
-# Logging primitives
+# Logging
 # ============================================================================
 set_log_file() {
   CURRENT_LOG_FILE="$1"
@@ -115,7 +115,7 @@ finish_job() {
 }
 
 # ============================================================================
-# rsync wrapper (rc=24 swallowed)
+# rsync wrapper (rc=24 ignored)
 # ============================================================================
 run_rsync_checked() {
   local log_file="$1"
@@ -135,7 +135,7 @@ run_rsync_checked() {
 }
 
 # ============================================================================
-# Local LUKS lifecycle (data-at-rest on this very host)
+# Local LUKS lifecycle (data-at-rest on this host)
 # ============================================================================
 local_prepare_luks() {
   local crypt_file="$1"
@@ -199,10 +199,10 @@ EOF
 }
 
 # ============================================================================
-# Job primitives
+# Job definitions
 # ============================================================================
 
-# Plain rsync over SSH — no LUKS at either end. Used for LAN-side links
+# Plain rsync over SSH - no LUKS at either end. Used for LAN-side links
 # where the underlying transport is already trusted (Tailscale).
 run_rsync_plain() {
   local job_name="$1"
