@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 # ----------------------------------------------------------------------------
-# nodes/web-mail/backup_monthly_sql.sh — monthly SQL archive
+# nodes/web-mail/backup_monthly_sql.sh - monthly SQL archive
 # ----------------------------------------------------------------------------
 # Triggered by the orchestrator on the 1st of every month. Dumps every
 # database to a single SQL file under /root/backup/sql/, named with the
 # year-month so old files are easy to spot. Used for compliance / accounting
-# purposes (long-term retention) — daily SQL dumps with shorter retention
+# purposes (long-term retention), daily SQL dumps with shorter retention
 # are produced by backup_webapp.sh.
 #
 # Credentials read from /root/.my.cnf via --defaults-extra-file.
-# License: MIT — see LICENSE in the repository root.
+# License: MIT - see LICENSE in the repository root.
 # ----------------------------------------------------------------------------
 
 set -Eeuo pipefail
