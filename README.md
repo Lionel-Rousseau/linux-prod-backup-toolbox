@@ -1,7 +1,7 @@
 # linux-prod-backup-toolbox
 
 > Multi-host backup orchestration scripts for a small Linux infrastructure
-> operated 24/7 since 2018 — `rsync`, LUKS containers, idempotent remote operations,
+> operated 24/7 since 2018. `rsync`, LUKS containers, idempotent remote operations,
 > SHA-256 verified config sync, and a verification loop that has actually
 > caught silent failures in production.
 
@@ -95,7 +95,7 @@ linux-prod-backup-toolbox/
 ## The Architecture
 
 A nightly orchestrator running on a hardened internal VM (Debian) connects
-over SSH to four backup endpoints — the Synology NAS at the core site, the
+over SSH to four backup endpoints : the Synology NAS at the core site, the
 Internet-facing combined web + mail server, the secondary MX, and a
 Raspberry-Pi-driven node. Each endpoint runs its own backup logic.
 The orchestrator does three things on its own: it **synchronizes the
@@ -153,7 +153,7 @@ The orchestrator is driven by a systemd timer that fires once a day at
 copy it to `/etc/systemd/system/`, enable it with
 `systemctl enable --now backup-nightly.timer`, and you are done.
 
-Per-node scripts are designed to be invokable independently as well —
+Per-node scripts are designed to be invokable independently as well,
 each one accepts no arguments, reads its configuration from environment
 variables (or hardcoded paths if you prefer), writes structured logs to
 `/var/log/`, and exits with a non-zero status on failure (or `24` on the
@@ -170,7 +170,7 @@ The minimum-viable configuration is described in
   `cryptsetup`, `restic`, `swaks`, `ssh`, `flock` to be present on the
   hosts. They are not included here.
 - **Not multi-tenant.** It is sized for a small infrastructure with a
-  handful of nodes — perhaps a dozen. Past that, look at proper backup
+  handful of nodes. Past that, look at proper backup
   software (BorgBackup with a backup server, Bareos, restic with
   `rest-server`, …) or orchestrators like Ansible AWX driving a real
   backup tool.
@@ -224,7 +224,7 @@ testing) are welcome.
 
 ## About
 
-Maintained by **Lionel Rousseau** — Linux administrator and SecOps
+Maintained by **Lionel Rousseau** - Linux administrator and SecOps
 practitioner, CompTIA Security+ and CySA+ certified.
 [`lionel@rousseau.kr`](mailto:lionel@rousseau.kr) ·
 [LinkedIn](https://www.linkedin.com/in/lionel-rousseau-kr/) ·
