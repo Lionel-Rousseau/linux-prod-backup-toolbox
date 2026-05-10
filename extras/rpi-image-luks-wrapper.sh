@@ -5,25 +5,17 @@
 # Wraps the cleartext RPi image storage on mx-secondary in a LUKS volume,
 # closing the only known confidentiality gap in the current backup chain.
 #
-# The constraint: this runs on a small Pi-class node receiving images
-# from RPi clients via sshfs. CPU is limited; we want a setup that adds
-# minimum overhead.
+# This runs on mx-secondary (the OVH-hosted server that receives and
+# stores Pi images). CPU overhead from LUKS is negligible on a server-class
+# host. The Raspberry Pi clients do not deal with encryption as they see
+# only a plain sshfs mountpoint.
 #
 # Approach:
-#   1. A single LUKS container file (sparse, sized to fit your retention).
+#   1. A single LUKS container file (sized to fit your retention).
 #   2. Container is opened on demand: just before each Pi pushes its
-#      image, opened from a key fetched over SSH from nas-home (same
-#      pattern as the rest of the chain).
-#   3. Container is closed immediately after the last Pi finishes for
-#      the night. The LUKS device is never mounted longer than needed.
-#   4. ext4 on top with `data=ordered` — no fancy filesystem features
-#      (no dedup, no snapshots) so CPU cost stays minimal.
-#
-# Performance note: LUKS overhead with kernel-default aes-xts-plain64 on
-# a Pi 4 is roughly 40-60 MB/s sustained on a USB3 SSD, which is more
-# than enough to absorb a few-hundred-MB incremental image push from a
-# Pi 3/4. For a Pi Zero / Pi 1 receiving end you would need to revisit;
-# this is sized for the expected role.
+#      image, opened from a key fetched over SSH from nas-home or locally.
+#   3. Container is closed immediately after the last Pi finishes.
+#      The LUKS device is never mounted longer than needed.
 #
 # Operational mode is split in two parts:
 #   - "init"     : one-time creation of the LUKS container
@@ -31,7 +23,7 @@
 #   - "close"    : unmount + close, used at the end
 #
 # Usage:
-#   rpi-image-luks-wrapper.sh init  --container /home/RpiBackup.crypt --size 100G
+#   rpi-image-luks-wrapper.sh init  --container /home/RpiBackup.crypt --size 32G
 #   rpi-image-luks-wrapper.sh open  --container /home/RpiBackup.crypt --mapper RpiBackup_crypt --mountpoint /home/RpiBackup
 #   rpi-image-luks-wrapper.sh close --mapper RpiBackup_crypt --mountpoint /home/RpiBackup
 #
@@ -55,7 +47,7 @@ Common options:
   --mountpoint <PATH>    where to mount the opened container
 
 init-only:
-  --size <SIZE>          size of the container file (e.g. 100G), passed to fallocate
+  --size <SIZE>          size of the container file (e.g. 32G), passed to fallocate
   --key-cmd <CMD>        shell command that prints the new LUKS key on stdout
                          (default: prompts interactively)
 
@@ -66,7 +58,7 @@ open-only:
   -h, --help             show this help
 
 Example workflow (one-time):
-  $(basename "$0") init  --container /home/RpiBackup.crypt --size 100G
+  $(basename "$0") init  --container /home/RpiBackup.crypt --size 32G
   # follow prompts to set the initial passphrase / key
 
 Example workflow (nightly):
