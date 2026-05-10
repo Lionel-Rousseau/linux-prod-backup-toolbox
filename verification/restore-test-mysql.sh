@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ----------------------------------------------------------------------------
-# verification/restore-test-mysql.sh — automated SQL dump replay
+# verification/restore-test-mysql.sh - automated SQL dump replay
 # ----------------------------------------------------------------------------
 # Replays a recent SQL dump from the backup chain into a throwaway
 # database, then runs a few sanity queries to confirm the dump is
@@ -22,7 +22,7 @@
 #     host=127.0.0.1
 #
 # The `restore_tester` user needs CREATE, DROP, INSERT, SELECT, ALTER,
-# INDEX, REFERENCES, LOCK TABLES on the throwaway database — typically
+# INDEX, REFERENCES, LOCK TABLES on the throwaway database, typically
 # granted via `GRANT ALL ON restore_test.* TO 'restore_tester'@'localhost'`.
 #
 # Usage:
@@ -32,7 +32,7 @@
 #                         [--expect-table orders=1 products=10] \
 #                         [--mail-on-fail]
 #
-# License: MIT — see LICENSE in the repository root.
+# License: MIT - see LICENSE in the repository root.
 # ----------------------------------------------------------------------------
 
 set -Eeuo pipefail
@@ -102,7 +102,7 @@ exec > >(tee -a "$LOG_FILE") 2>&1
 
 echo
 echo "================================================================"
-echo "restore-test-mysql — $(date)"
+echo "restore-test-mysql - $(date)"
 echo "  dump:          $DUMP"
 echo "  size:          $(du -h "$DUMP" | awk '{print $1}')"
 echo "  defaults:      $DEFAULTS_FILE"
@@ -157,7 +157,7 @@ start=$(date +%s)
 if ! mysql_cmd "$DB" < "$DUMP"; then
   msg="restore-test-mysql FAILED: dump replay returned non-zero for $DUMP"
   echo "$msg"
-  send_alert_mail "[ALERT] restore-test-mysql — replay failed" "$msg"
+  send_alert_mail "[ALERT] restore-test-mysql - replay failed" "$msg"
   exit 1
 fi
 elapsed=$(( $(date +%s) - start ))
@@ -172,7 +172,7 @@ echo "  tables in $DB: $table_count"
 if [ "$table_count" -lt 1 ]; then
   msg="restore-test-mysql FAILED: no tables found in $DB after replay"
   echo "$msg"
-  send_alert_mail "[ALERT] restore-test-mysql — no tables after replay" "$msg"
+  send_alert_mail "[ALERT] restore-test-mysql - no tables after replay" "$msg"
   exit 1
 fi
 
@@ -203,13 +203,13 @@ done
 if [ "$failed_expectations" -gt 0 ]; then
   msg="restore-test-mysql FAILED: $failed_expectations expectation(s) not met after replaying $DUMP"
   echo "$msg"
-  send_alert_mail "[ALERT] restore-test-mysql — expectations failed" "$msg"
+  send_alert_mail "[ALERT] restore-test-mysql - expectations failed" "$msg"
   exit 1
 fi
 
 echo
 echo "================================================================"
-echo "restore-test-mysql — PASS (${table_count} tables, ~${total_rows} rows, ${elapsed}s)"
+echo "restore-test-mysql - PASS (${table_count} tables, ~${total_rows} rows, ${elapsed}s)"
 echo "================================================================"
 echo
 
