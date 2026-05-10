@@ -9,7 +9,7 @@ User=root
 WorkingDirectory=/root/backup-orchestrator
 ExecStart=/root/backup-orchestrator/backup-nightly.sh
 
-# Hardening (uncomment progressively after validating they don't break the run)
+# Hardening (uncomment progressively if they don't break the run)
 # NoNewPrivileges=yes
 # PrivateTmp=yes
 # ProtectSystem=strict
