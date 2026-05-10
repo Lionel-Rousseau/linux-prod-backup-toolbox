@@ -32,16 +32,16 @@ specific gaps brought by the recent introduction of the Rpi imaging option.
 
 ### Reinstall procedure (standalone node)
 
-1. Reinstall SO 3.0.x from the ISO — do not run the setup wizard yet.
+1. Reinstall SO 3.0.x from the ISO (do not run the setup wizard).
 2. Restore the pillar before the first checkin:
    ```bash
    cp -a /path/to/restore/opt/so/saltstack/local/pillar/ \
          /opt/so/saltstack/local/pillar/
    ```
-3. Run `so-checkin` — Salt reads the pillar and reconfigures all containers.
+3. Run `so-checkin`. Salt reads the pillar and reconfigures all containers.
 4. Verify with `so-status` that all expected containers are running.
 
-Elastic indices, PCAPs, and Suricata community rules are not backed up —
+Elastic indices, PCAPs, and Suricata community rules are not backed up,
 they regenerate automatically from live traffic and `so-checkin`.
 
 ### Hardening notes
@@ -50,7 +50,7 @@ they regenerate automatically from live traffic and `so-checkin`.
   internal addresses. Review before treating the archive or transferring it offsite.
 - The output archive is mode `0600`. Consider putting it inside a LUKS volume to secure it.
 
-## rpi-image-luks-wrapper.sh — hardening notes
+## rpi-image-luks-wrapper.sh hardening notes
 
 - The init step is non-interactive as the key is piped from --key-cmd
   directly into cryptsetup luksFormat --key-file /dev/stdin --batch-mode. 
