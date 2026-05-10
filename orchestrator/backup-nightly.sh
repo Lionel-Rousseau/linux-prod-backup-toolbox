@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ----------------------------------------------------------------------------
-# backup-nightly.sh — central orchestrator for nightly backups
+# backup-nightly.sh - central orchestrator for nightly backups
 # ----------------------------------------------------------------------------
 # Runs once a day at 00:30 (see backup-nightly.timer). Drives backup jobs on
 # four endpoints, fetches their logs back, scans them for negative markers,
@@ -22,7 +22,7 @@
 #     Set SEND_OK=1 to also receive the daily "OK" email if you prefer.
 #   * single-flight: flock on /var/lock so two campaigns cannot overlap.
 #
-# License: MIT — see LICENSE in the repository root.
+# License: MIT - see LICENSE in the repository root.
 # ----------------------------------------------------------------------------
 
 set -Eeuo pipefail
@@ -118,7 +118,7 @@ fetch_remote_log() {
 # ============================================================================
 # Push a local file to the remote host, but only if the SHA-256 differs.
 # After the upload, re-verify the destination hash. If it does not match
-# the local hash, fail loudly — silent corruption is the failure mode we
+# the local hash, fail loudly, silent corruption is the failure mode we
 # want to catch.
 sync_file_to_host() {
   local host="$1"
