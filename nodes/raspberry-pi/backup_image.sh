@@ -1,6 +1,6 @@
 #!/bin/bash
 # ----------------------------------------------------------------------------
-# nodes/raspberry-pi/backup_image.sh — RPi root image to remote storage
+# nodes/raspberry-pi/backup_image.sh - RPi root image to remote storage
 # ----------------------------------------------------------------------------
 # Runs on each Raspberry Pi node (RaspiOS) via cron. Mounts the offsite
 # backup share (sshfs to mx-secondary), produces a compact image of the
@@ -16,7 +16,7 @@
 # are stored *in cleartext*. See extras/rpi-image-luks-wrapper.sh for the
 # planned migration to LUKS-encrypted storage.
 #
-# License: MIT — see LICENSE in the repository root.
+# License: MIT - see LICENSE in the repository root.
 # ----------------------------------------------------------------------------
 
 set -Eeuo pipefail
@@ -32,7 +32,7 @@ REMOTE_LOG_PATH="${REMOTE_LOG_PATH:-/var/log/08_backupMX2_RpiBackup.log}"
 echo "begin: $(date)" >> "$LOG" 2>&1
 
 # Defensive cleanup in case a previous run was interrupted with the share
-# still mounted (it happens — power cuts, sshfs deadlocks).
+# still mounted (it happens! power cuts, sshfs deadlocks...).
 mountpoint -q "$MOUNT_POINT" && /usr/bin/umount "$MOUNT_POINT" >/dev/null 2>&1 || true
 mkdir -p "$MOUNT_POINT"
 
