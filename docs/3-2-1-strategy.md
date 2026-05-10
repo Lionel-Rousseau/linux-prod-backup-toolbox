@@ -1,4 +1,4 @@
-# 3-2-1 strategy, applied
+# 3-2-1 Strategy
 
 The 3-2-1 backup rule is quite well known and effective: **3 copies of your
 data, on 2 different media types, with 1 copy offsite**. This
@@ -46,7 +46,7 @@ different datacenters, are still roughly the same media class.
 A stricter interpretation would add tape (LTO) or write-once optical.
 For the current scale (single-digit TB) and the threat model
 (opportunistic ransomware, single-host failures), the USB mirror is the
-sized response, with the caveat below.
+sized response.
 
 ## One copy offsite
 
@@ -73,16 +73,13 @@ Reality facts.
   only during the rsync run and unmounted immediately after, a ransomware process 
   on the NAS has a narrow window to reach it, only while mv2usb.sh is actively 
   writing. Outside that window, the drive is offline at the OS level. This makes 
-  it a genuine point-in-time safe copy rather than a permanently-exposed mirror, 
-  at the cost of one operational constraint: DSM USB auto-mount must remain disabled, 
-  otherwise DSM remounts the drive automatically a few seconds after unmount.
+  it a point-in-time safe copy rather than a permanently-exposed mirror.
 - **The two OVH copies are correlated.** A vendor-side compromise of
-  OVH (control plane breach, mass disk-warrant scenario) would hit both.
-  The NAS at the core site is the genuine independence for that scenario.
+  OVH would hit both.
+  The NAS at the core site is the real independence for that scenario.
 - **Verification is not free.** The orchestrator catches failures during
   the run and the log healthcheck catches them an hour later, but the
-  third leg of the verification triangle is a manual process documented in
+  third part of the verification is a manual process documented in
   [`restoration-runbook.md`](restoration-runbook.md), not a fully
   automated job. Two manual restores per month, on rotating
-  hosts/datasets, is the operational cost paid for confidence in the
-  backups.
+  hosts/datasets, is the price for confidence in the backups.
