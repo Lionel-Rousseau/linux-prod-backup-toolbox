@@ -1,6 +1,6 @@
 #!/bin/bash
 # ----------------------------------------------------------------------------
-# nodes/nas-core/backup.sh — nightly backup orchestration on the Synology NAS
+# nodes/nas-core/backup.sh - nightly backup orchestration on the Synology NAS
 # ----------------------------------------------------------------------------
 # Runs on the Synology NAS (DSM 7.3.x). Driven by the central orchestrator
 # over SSH. Replicates each protected dataset to the encrypted destination
@@ -15,7 +15,7 @@
 #
 # Set LOG_FILE in the calling environment to override the default log path.
 #
-# License: MIT — see LICENSE in the repository root.
+# License: MIT - see LICENSE in the repository root.
 # ----------------------------------------------------------------------------
 
 set -Eeuo pipefail
@@ -70,7 +70,7 @@ finish_job() {
 }
 
 # ============================================================================
-# rsync wrapper — handles the "vanished file race" cleanly
+# rsync wrapper - handles the "vanished file" messages
 # ============================================================================
 # rsync exit code 24 means "some files vanished during transfer". On a
 # live filesystem (logs being rotated, mail spool, etc.) this is benign
@@ -124,7 +124,7 @@ run_scp_checked() {
 }
 
 # ============================================================================
-# Remote LUKS wrappers — drive the destination's LUKS lifecycle from here
+# Remote LUKS wrappers - Destination's LUKS management
 # ============================================================================
 remote_prepare_luks() {
   local remote_host="$1"
@@ -276,7 +276,7 @@ run_rsync_daemon_plain() {
 }
 
 # ============================================================================
-# Error trap — emergency cleanup on any failure path
+# Error trap & cleanup on any failure
 # ============================================================================
 error_handler() {
   local line_no="$1"
