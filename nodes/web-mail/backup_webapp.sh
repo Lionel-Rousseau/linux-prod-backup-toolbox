@@ -1,6 +1,6 @@
 #!/bin/bash
 # ----------------------------------------------------------------------------
-# nodes/web-mail/backup_webapp.sh — web app folder + DB rolling archives
+# nodes/web-mail/backup_webapp.sh - web app folder + DB rolling archives
 # ----------------------------------------------------------------------------
 # Runs on the web+mail node. Three things, in order:
 #   1. rsync the live document root to the secondary MX (LUKS volume)
@@ -11,23 +11,20 @@
 #      retention windows: 7 web archives, 14 SQL archives).
 #
 # Why a separate script: the rolling archives serve a different purpose
-# from the rsync mirror. rsync mirrors the *current* state — useful for
+# from the rsync mirror. rsync mirrors the *current* state, useful for
 # disaster recovery, useless for "I broke something at 14:30, give me the
 # state of 06:00". The dated archives cover that gap.
 #
 # Secrets handling
 # ----------------
-# `mysqldump` reads its credentials from /root/.my.cnf — a 0600 file with:
+# `mysqldump` reads its credentials from /root/.my.cnf (0600 file) with:
 #
 #     [mysqldump]
 #     user=backup_dump
 #     password=...
 #     host=127.0.0.1
 #
-# The user has SELECT, LOCK TABLES, SHOW VIEW, EVENT, TRIGGER and PROCESS
-# privileges only — no INSERT, no UPDATE, no DELETE.
-#
-# License: MIT — see LICENSE in the repository root.
+# License: MIT - see LICENSE in the repository root.
 # ----------------------------------------------------------------------------
 
 set -Eeuo pipefail
