@@ -1,27 +1,26 @@
 # Extras
 
-Optional add-ons that build on the same patterns as the main backup
-chain but address narrower gaps. Each script is self-contained and can
-be adopted independently.
+Optional add-ons build on the same patterns as the main backup
+chain but address some gaps. Each script is self-contained and can
+be called independently.
 
 ## Contents
 
 | Script                              | Addresses                                                   |
 |-------------------------------------|-------------------------------------------------------------|
-| `security-onion-config-backup.sh`   | Security Onion is too large for a full PBS backup, but its configuration IS worth preserving. This captures only the configuration surface (~40 KB archive) so the SO instance can be rebuilt after a clean reinstall. Tested on SO 3.0.0 / Oracle Linux 9.7. |
-| `rpi-image-luks-wrapper.sh`         | Wraps the RPi image storage on mx-secondary in a LUKS volume using the same key-custody pattern as the rest of the chain (eval "$KEY_CMD" \| cryptsetup --key-file /dev/stdin), with init / open / close subcommands. Tested on Ubuntu 24.04 LTS (OVH dedicated).. |
+| `security-onion-config-backup.sh`   | Security Onion is too large for a full PBS backup, but it is important to keep its configuration. This captures only the configuration surface (~40 KB archive) so the SO instance can be rebuilt after a clean reinstall. Tested on SO 3.0.0 / Oracle Linux 9.7. |
+| `rpi-image-luks-wrapper.sh`         | Wraps the RPi image storage on mx-secondary in a LUKS volume using a key stored in a file (locally or remotely by ssh), with init / open / close subcommands. Tested on Ubuntu 24.04 LTS (OVH dedicated). |
 
 ## Status
 
 These are **proposed** for the production setup, not yet deployed at the
-time of writing — they are part of the roadmap, ready to ship. The main
-chain (orchestrator + per-node scripts + verification) has been running
-for years; these two scripts close two specific gaps the threat model
-flagged.
+time of writing but almost ready. The main chain (orchestrator + per-node scripts
+verification) has been running for a long time and these two scripts close two
+specific gaps brought by the recent introduction of the Rpi imaging option.
 
-## security-onion-config-backup.sh — detail
+## security-onion-config-backup.sh
 
-### What is captured
+### The files selection
 
 | Path | Content |
 |---|---|
@@ -47,18 +46,13 @@ they regenerate automatically from live traffic and `so-checkin`.
 
 ### Hardening notes
 
-- The `pillar.items` dump in `_state/` routinely contains credentials and
-  internal addresses. Review before treating the archive as portable or
-  transferring it offsite.
-- The output archive is mode `0600`. Ship it inside a LUKS volume like
-  every other offsite artefact in this chain — do not assume "no PCAPs"
-  means "no sensitive data".
+- The `pillar.items` dump in `_state/` may contains credentials and
+  internal addresses. Review before treating the archive or transferring it offsite.
+- The output archive is mode `0600`. Consider putting it inside a LUKS volume to secure it.
 
 ## rpi-image-luks-wrapper.sh — hardening notes
 
-- LUKS overhead on Pi-class CPUs is the bottleneck. Benchmark with
-  `cryptsetup benchmark` on the target node before sizing.
-- The init step is non-interactive — the key is piped from --key-cmd
+- The init step is non-interactive as the key is piped from --key-cmd
   directly into cryptsetup luksFormat --key-file /dev/stdin --batch-mode. 
   A recovery passphrase can be added afterwards with cryptsetup luksAddKey
   in case the key holder (nas-core) is unavailable during an emergency restore.
