@@ -1,4 +1,4 @@
-# crontab.example — minimal scheduling without systemd
+# crontab.example - minimal scheduling without systemd
 # ----------------------------------------------------------------------------
 # Use this as a starting point if you prefer cron over systemd timers.
 # Install with:  crontab -u root crontab.example
@@ -7,7 +7,7 @@
 
 # m  h  dom mon dow  command
 # === Orchestrator ============================================================
-# Main nightly campaign — drives every node's backup script over SSH.
+# Main nightly campaign : drives every node's backup script over SSH.
 30  0  *   *   *    /root/backup-orchestrator/backup-nightly.sh
 
 # === Per-node log healthcheck ================================================
