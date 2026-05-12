@@ -13,7 +13,7 @@ This tells you whether this is sized for your environment.
 | Mail spool (`/home/vmail`)     | Operational continuity (orders, customer support). Loss of older mail is non-fatal but loss of recent days is. |
 | OS on web-mail                 | Reproducibility of the public-facing service if the OVH host fails. |
 | OS on mx-secondary             | Reproducibility of the secondary MX. |
-| Pi root images                 | Convenience an time saving. Re-flashing from scratch takes time. |
+| Pi root images                 | Convenience and time saving. Re-flashing from scratch takes time. |
 
 ## Attackers / failure modes we care about
 
