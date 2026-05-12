@@ -13,7 +13,7 @@
 # Approach:
 #   1. A single LUKS container file (sized to fit your retention).
 #   2. Container is opened on demand: just before each Pi pushes its
-#      image, opened from a key fetched over SSH from nas-home or locally.
+#      image, opened from a key fetched over SSH from nas-core or locally.
 #   3. Container is closed immediately after the last Pi finishes.
 #      The LUKS device is never mounted longer than needed.
 #
