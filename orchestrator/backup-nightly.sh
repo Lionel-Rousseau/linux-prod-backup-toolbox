@@ -54,6 +54,26 @@ WINDOW_END_EPOCH="$(date -d "$(date +%F) 23:59:00" +%s)"
 STATUS=0
 declare -a SUMMARY=()
 
+# === Host registry — single source of truth for host + SSH port =============
+# If a port changes on a node, change it ONCE here. Every helper that talks
+# to a remote takes the port as an explicit parameter; the registry is only
+# used by the caller layer to resolve host -> port.
+declare -A HOST_PORTS=(
+  [nas-home.example.net]=1249
+  [web-mail.example.org]=1622
+  [mx-secondary.example.org]=1622
+)
+
+host_port() {
+  local host="$1"
+  local port="${HOST_PORTS[$host]:-}"
+  if [ -z "$port" ]; then
+    log "ERROR: no SSH port registered for host '$host'"
+    return 1
+  fi
+  printf '%s' "$port"
+}
+
 # ============================================================================
 # Logging helpers
 # ============================================================================
@@ -122,52 +142,38 @@ fetch_remote_log() {
 # want to catch.
 sync_file_to_host() {
   local host="$1"
-  local local_file="$2"
-  local remote_file="$3"
-  local perm="$4"
-  local method="$5"      # "scp" for normal hosts, "pipe" for the Synology
+  local port="$2"
+  local local_file="$3"
+  local remote_file="$4"
+  local perm="$5"
+  local method="$6"
 
-  local remote_dir tmp_file local_sum remote_sum
-  remote_dir="$(dirname "$remote_file")"
-  tmp_file="${remote_file}.tmp"
-
-  if [ ! -r "$local_file" ]; then
-    log "ERROR: local file missing or unreadable: $local_file"
-    return 1
-  fi
-
-  ssh -q -T -o LogLevel=ERROR -o BatchMode=yes -o ConnectTimeout=20 root@"$host" "mkdir -p '$remote_dir'" >>"$MASTER_LOG" 2>&1 || {
-    log "ERROR: cannot create $remote_dir on $host"
-    return 1
-  }
-
+  local tmp_file local_sum remote_sum
+  tmp_file="${remote_file}.tmp.$$"
   local_sum="$(sha256sum "$local_file" | awk '{print $1}')"
-  remote_sum="$(ssh -q -T -o LogLevel=ERROR -o BatchMode=yes -o ConnectTimeout=20 root@"$host" "test -f '$remote_file' && sha256sum '$remote_file' | awk '{print \$1}'" 2>/dev/null || true)"
-
-  if [ "$local_sum" = "$remote_sum" ]; then
-    log "$host : $(basename "$remote_file") already up to date"
-    return 0
-  fi
-
-  log "$host : updating $(basename "$remote_file")"
 
   case "$method" in
     scp)
-      scp -q "$local_file" root@"$host":"$tmp_file" >>"$MASTER_LOG" 2>&1 || {
-        log "ERROR: scp upload of $(basename "$remote_file") to $host failed"
-        ssh -q root@"$host" "rm -f '$tmp_file'" >>"$MASTER_LOG" 2>&1 || true
+      scp -q -P "$port" -o LogLevel=ERROR "$local_file" \
+          root@"$host":"$tmp_file" >>"$MASTER_LOG" 2>&1 || {
+        log "ERROR: scp upload of $(basename "$remote_file") to $host:$port failed"
         return 1
       }
-      ssh -q root@"$host" "chmod $perm '$tmp_file' && mv '$tmp_file' '$remote_file'" >>"$MASTER_LOG" 2>&1 || {
-        log "ERROR: cannot finalise $(basename "$remote_file") on $host"
-        ssh -q root@"$host" "rm -f '$tmp_file'" >>"$MASTER_LOG" 2>&1 || true
+      ssh -q -T -p "$port" -o LogLevel=ERROR -o BatchMode=yes -o ConnectTimeout=20 \
+          root@"$host" "chmod $perm '$tmp_file' && mv '$tmp_file' '$remote_file'" \
+          >>"$MASTER_LOG" 2>&1 || {
+        log "ERROR: chmod/mv of $(basename "$remote_file") on $host failed"
+        ssh -q -p "$port" root@"$host" "rm -f '$tmp_file'" >>"$MASTER_LOG" 2>&1 || true
         return 1
       }
       ;;
     pipe)
-      cat "$local_file" | ssh -q root@"$host" "cat > '$tmp_file' && chmod $perm '$tmp_file' && mv '$tmp_file' '$remote_file'" >>"$MASTER_LOG" 2>&1 || {
-        log "ERROR: ssh/cat upload of $(basename "$remote_file") to $host failed"
-        ssh -q root@"$host" "rm -f '$tmp_file'" >>"$MASTER_LOG" 2>&1 || true
+      ssh -q -T -p "$port" -o LogLevel=ERROR -o BatchMode=yes -o ConnectTimeout=20 \
+          root@"$host" \
+          "cat > '$tmp_file' && chmod $perm '$tmp_file' && mv '$tmp_file' '$remote_file'" \
+          <"$local_file" >>"$MASTER_LOG" 2>&1 || {
+        log "ERROR: ssh/cat upload of $(basename "$remote_file") to $host:$port failed"
+        ssh -q -p "$port" root@"$host" "rm -f '$tmp_file'" >>"$MASTER_LOG" 2>&1 || true
         return 1
       }
       ;;
@@ -177,13 +183,14 @@ sync_file_to_host() {
       ;;
   esac
 
-  remote_sum="$(ssh -q -T -o LogLevel=ERROR -o BatchMode=yes -o ConnectTimeout=20 root@"$host" "sha256sum '$remote_file' | awk '{print \$1}'" 2>/dev/null || true)"
+  remote_sum="$(ssh -q -T -p "$port" -o LogLevel=ERROR -o BatchMode=yes -o ConnectTimeout=20 \
+                root@"$host" "sha256sum '$remote_file' | awk '{print \$1}'" 2>/dev/null || true)"
   if [ "$local_sum" != "$remote_sum" ]; then
     log "ERROR: checksum mismatch after upload of $(basename "$remote_file") to $host"
     return 1
   fi
 
-  log "$host : $(basename "$remote_file") synced"
+  log "$host:$port : $(basename "$remote_file") synced"
 }
 
 sync_support_files() {
