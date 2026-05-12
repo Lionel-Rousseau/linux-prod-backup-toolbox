@@ -32,6 +32,7 @@ CURRENT_LOG_FILE="/var/log/backupWebMail_orchestration.log"
 LOG_FILE="$CURRENT_LOG_FILE"
 CURRENT_JOB_NAME="init"
 CURRENT_REMOTE_HOST=""
+CURRENT_REMOTE_PORT=""
 CURRENT_REMOTE_MAPPER_NAME=""
 CURRENT_REMOTE_LUKS_OPEN=0
 
@@ -83,14 +84,16 @@ finish_job() {
 # ============================================================================
 remote_prepare_luks() {
   local remote_host="$1"
-  local crypt_file="$2"
-  local mapper_name="$3"
+  local remote_port="$2"
+  local crypt_file="$3"
+  local mapper_name="$4"
 
   CURRENT_REMOTE_HOST="$remote_host"
+  CURRENT_REMOTE_PORT="$remote_port"
   CURRENT_REMOTE_MAPPER_NAME="$mapper_name"
   CURRENT_REMOTE_LUKS_OPEN=1
 
-  ssh -q -o LogLevel=ERROR root@"$remote_host" 'bash -s' <<EOF
+  ssh -q -T -p "$remote_port" -o LogLevel=ERROR root@"$remote_host" 'bash -s' <<EOF
 set -Eeuo pipefail
 LOG_FILE="/var/log/${mapper_name}.remote.log"
 . /root/backup-orchestrator/luks_functions.sh
@@ -100,9 +103,10 @@ EOF
 
 remote_close_luks() {
   local remote_host="$1"
-  local mapper_name="$2"
+  local remote_port="$2"
+  local mapper_name="$3"
 
-  ssh -q -o LogLevel=ERROR root@"$remote_host" 'bash -s' <<EOF
+  ssh -q -T -p "$remote_port" -o LogLevel=ERROR root@"$remote_host" 'bash -s' <<EOF
 set -Eeuo pipefail
 LOG_FILE="/var/log/${mapper_name}.remote.log"
 . /root/backup-orchestrator/luks_functions.sh
@@ -112,6 +116,7 @@ EOF
 
   CURRENT_REMOTE_LUKS_OPEN=0
   CURRENT_REMOTE_HOST=""
+  CURRENT_REMOTE_PORT=""
   CURRENT_REMOTE_MAPPER_NAME=""
 }
 
@@ -224,9 +229,10 @@ error_handler() {
       echo "Emergency remote cleanup on ${CURRENT_REMOTE_HOST} for ${CURRENT_REMOTE_MAPPER_NAME} ..."
     } >>"$CURRENT_LOG_FILE" 2>&1
 
-    remote_close_luks "$CURRENT_REMOTE_HOST" "$CURRENT_REMOTE_MAPPER_NAME" >>"$CURRENT_LOG_FILE" 2>&1 || true
+    remote_close_luks "$CURRENT_REMOTE_HOST" "$CURRENT_REMOTE_PORT" "$CURRENT_REMOTE_MAPPER_NAME" >>"$CURRENT_LOG_FILE" 2>&1 || true
     CURRENT_REMOTE_LUKS_OPEN=0
     CURRENT_REMOTE_HOST=""
+    CURRENT_REMOTE_PORT=""
     CURRENT_REMOTE_MAPPER_NAME=""
   fi
 
