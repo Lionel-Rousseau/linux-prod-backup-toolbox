@@ -166,14 +166,16 @@ local_close_luks() {
 # ============================================================================
 remote_prepare_luks() {
   local remote_host="$1"
-  local crypt_file="$2"
-  local mapper_name="$3"
+  local remote_port="$2"
+  local crypt_file="$3"
+  local mapper_name="$4"
 
   CURRENT_REMOTE_HOST="$remote_host"
+  CURRENT_REMOTE_PORT="$remote_port"
   CURRENT_REMOTE_MAPPER_NAME="$mapper_name"
   CURRENT_REMOTE_LUKS_OPEN=1
 
-  ssh -q -o LogLevel=ERROR "$remote_host" 'bash -s' <<EOF
+  ssh -q -T -p "$remote_port" -o LogLevel=ERROR root@"$remote_host" 'bash -s' <<EOF
 set -Eeuo pipefail
 LOG_FILE="/var/log/${mapper_name}.remote.log"
 . /root/backup-orchestrator/luks_functions.sh
@@ -183,9 +185,10 @@ EOF
 
 remote_close_luks() {
   local remote_host="$1"
-  local mapper_name="$2"
+  local remote_port="$2"
+  local mapper_name="$3"
 
-  ssh -q -o LogLevel=ERROR "$remote_host" 'bash -s' <<EOF
+  ssh -q -T -p "$remote_port" -o LogLevel=ERROR root@"$remote_host" 'bash -s' <<EOF
 set -Eeuo pipefail
 LOG_FILE="/var/log/${mapper_name}.remote.log"
 . /root/backup-orchestrator/luks_functions.sh
@@ -195,6 +198,7 @@ EOF
 
   CURRENT_REMOTE_LUKS_OPEN=0
   CURRENT_REMOTE_HOST=""
+  CURRENT_REMOTE_PORT=""
   CURRENT_REMOTE_MAPPER_NAME=""
 }
 
@@ -248,7 +252,7 @@ run_rsync_with_remote_luks() {
   begin_job "$log_file"
 
   echo -e "\nOpening Lock\n" >>"$log_file"
-  remote_prepare_luks "$remote_host" "$remote_crypt_file" "$remote_mapper_name" >>"$log_file" 2>&1
+  remote_prepare_luks "$remote_host" "$remote_port" "$remote_crypt_file" "$remote_mapper_name" >>"$log_file" 2>&1
 
   run_rsync_checked "$log_file" \
     -ah --partial --stats \
@@ -259,7 +263,7 @@ run_rsync_with_remote_luks() {
     "$src" "$dst"
 
   echo -e "\nLocking Up\n" >>"$log_file"
-  remote_close_luks "$remote_host" "$remote_mapper_name" >>"$log_file" 2>&1
+  remote_close_luks "$remote_host" "$remote_port" "$remote_mapper_name" >>"$log_file" 2>&1
 
   finish_job "$log_file" "$start_time"
 }
@@ -323,7 +327,7 @@ dual_luks_section() {
   local_prepare_luks "$local_crypt_file" "$local_mapper_name" >>"$log_file" 2>&1
 
   echo -e "\nOpening Remote Lock\n" >>"$log_file" 2>&1
-  remote_prepare_luks "$remote_host" "$remote_crypt_file" "$remote_mapper_name" >>"$log_file" 2>&1
+  remote_prepare_luks "$remote_host" "$remote_port" "$remote_crypt_file" "$remote_mapper_name" >>"$log_file" 2>&1
 
   run_rsync_checked "$log_file" \
     -ah --partial --stats \
@@ -337,7 +341,7 @@ dual_luks_section() {
   local_close_luks "$local_mapper_name" >>"$log_file" 2>&1
 
   echo -e "\nLocking Up Remote\n" >>"$log_file" 2>&1
-  remote_close_luks "$remote_host" "$remote_mapper_name" >>"$log_file" 2>&1
+  remote_close_luks "$remote_host" "$remote_port" "$remote_mapper_name" >>"$log_file" 2>&1
 }
 
 plain_section() {
@@ -450,9 +454,10 @@ error_handler() {
       echo "Emergency remote cleanup on ${CURRENT_REMOTE_HOST} for ${CURRENT_REMOTE_MAPPER_NAME} ..."
     } >>"$CURRENT_LOG_FILE" 2>&1
 
-    remote_close_luks "$CURRENT_REMOTE_HOST" "$CURRENT_REMOTE_MAPPER_NAME" >>"$CURRENT_LOG_FILE" 2>&1 || true
+    remote_close_luks "$CURRENT_REMOTE_HOST" "$CURRENT_REMOTE_PORT" "$CURRENT_REMOTE_MAPPER_NAME" >>"$CURRENT_LOG_FILE" 2>&1 || true
     CURRENT_REMOTE_LUKS_OPEN=0
     CURRENT_REMOTE_HOST=""
+    CURRENT_REMOTE_PORT=""
     CURRENT_REMOTE_MAPPER_NAME=""
   fi
 
