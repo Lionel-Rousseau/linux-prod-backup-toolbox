@@ -193,7 +193,7 @@ build_local_archives() {
   rm -Rf "${LOCAL_ARCHIVE_ROOT}/${folname}/"
   mkdir -p "${LOCAL_ARCHIVE_ROOT}/${folname}"
   cp -a "$WEBROOT/." "${LOCAL_ARCHIVE_ROOT}/${folname}"
-  GZIP=-9 tar -c -z -f "${LOCAL_ARCHIVE_ROOT}/${folname}.tar.gz" "${LOCAL_ARCHIVE_ROOT}/${folname}" >>"$log_file" 2>&1
+  tar -c --use-compress-program="gzip -9" -f "${LOCAL_ARCHIVE_ROOT}/${folname}.tar.gz" "${LOCAL_ARCHIVE_ROOT}/${folname}" >>"$log_file" 2>&1
 
   echo -e "\nMySQL Dump : $(date)\n" >>"$log_file" 2>&1
   cd "${LOCAL_ARCHIVE_ROOT}/"
