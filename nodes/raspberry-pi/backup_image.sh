@@ -29,6 +29,11 @@ REMOTE_PATH="${REMOTE_PATH:-/home/RpiBackup}"
 IMG_NAME="${IMG_NAME:-RpiBackup.img}"
 REMOTE_LOG_PATH="${REMOTE_LOG_PATH:-/var/log/08_backupMX2_RpiBackup.log}"
 
+  cleanup() {
+    mountpoint -q "$MOUNT_POINT" && /bin/fusermount -u "$MOUNT_POINT" >/dev/null 2>&1 || true
+  }
+  trap cleanup EXIT
+
 echo "begin: $(date)" >> "$LOG" 2>&1
 
 # Defensive cleanup in case a previous run was interrupted with the share
@@ -48,10 +53,6 @@ mkdir -p "$MOUNT_POINT"
 /usr/local/sbin/image-backup "${MOUNT_POINT}/${IMG_NAME}" &
 PID=$!
 wait "$PID"
-
-# Buffer flush + tear-down. fusermount is the right tool for sshfs.
-sleep 10
-/bin/fusermount -u "$MOUNT_POINT"
 
 echo "end: $(date)" >> "$LOG" 2>&1
 
