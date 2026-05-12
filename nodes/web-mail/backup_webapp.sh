@@ -49,7 +49,7 @@ CURRENT_REMOTE_PORT=""
 CURRENT_REMOTE_MAPPER_NAME=""
 CURRENT_REMOTE_LUKS_OPEN=0
 
-REMOTE_MX2_HOST="mx-secondary"
+REMOTE_MX2_HOST="mx-secondary.example.org"
 REMOTE_MX2_PORT=1622
 LOCAL_ARCHIVE_ROOT="/root"
 WEBROOT="/var/www/html"
@@ -135,10 +135,11 @@ run_rsync_checked() {
 
 run_scp_checked() {
   local log_file="$1"
-  shift
+  local port="$2"
+  shift 2
 
   set +e
-  scp -q "$@" >>"$log_file" 2>&1
+  scp -q -P "$port" "$@" >>"$log_file" 2>&1
   local scp_rc=$?
   set -e
 
@@ -149,7 +150,6 @@ run_scp_checked() {
 
   return 0
 }
-
 # ============================================================================
 # Job 1: rsync live web folder to mx-secondary (LUKS)
 # ============================================================================
@@ -165,9 +165,9 @@ run_webfolder_rsync_to_mx2() {
   run_rsync_checked "$log_file" \
     -ah --partial --stats \
     --password-file=/root/pass2.pwd \
-    -e "ssh -q -o LogLevel=ERROR -p 1622 -i /root/.ssh/id_ed25519 -l root -T -x" \
+    -e "ssh -q -o LogLevel=ERROR -p $REMOTE_MX2_PORT -i /root/.ssh/id_ed25519 -l root -T -x" \
     "$WEBROOT/" \
-    "root@mx-secondary.example.org::WebApp" \
+    "root@${REMOTE_MX2_HOST}::WebApp" \
     --delete \
     --ignore-errors \
     --human-readable \
@@ -225,8 +225,8 @@ push_sql_archives_to_mx2() {
   remote_prepare_luks "$REMOTE_MX2_HOST" "$REMOTE_MX2_PORT" "/home/Backup_WebAppSQL.crypt" "Backup_WebAppSQL_crypt" >>"$log_file" 2>&1
 
   # ---- Remote retention: keep last 14 SQL dumps offsite ----
-  ssh -q -o LogLevel=ERROR -p 1622 root@mx-secondary.example.org 'cd /home/tmp_crypt/ && ls -t Backup-* 2>/dev/null | tail -n +15 | xargs -r rm --' >>"$log_file" 2>&1
-  ssh -q -o LogLevel=ERROR -p 1622 root@mx-secondary.example.org 'df -h /home/tmp_crypt; df -ih /home/tmp_crypt; mount | grep "/home/tmp_crypt"' >>"$log_file" 2>&1
+  ssh -q -o LogLevel=ERROR -p "$REMOTE_MX2_PORT" root@"$REMOTE_MX2_HOST" 'cd /home/tmp_crypt/ && ls -t Backup-* 2>/dev/null | tail -n +15 | xargs -r rm --' >>"$log_file" 2>&1
+  ssh -q -o LogLevel=ERROR -p "$REMOTE_MX2_PORT" root@"$REMOTE_MX2_HOST" 'df -h /home/tmp_crypt; df -ih /home/tmp_crypt; mount | grep "/home/tmp_crypt"' >>"$log_file" 2>&1
 
   shopt -s nullglob
   sql_files=( $(ls -t "${LOCAL_ARCHIVE_ROOT}"/Backup-*.sql 2>/dev/null | head -n 1) )
@@ -237,7 +237,7 @@ push_sql_archives_to_mx2() {
     return 1
   fi
 
-  run_scp_checked "$log_file" -P 1622 "${sql_files[@]}" root@mx-secondary.example.org:/home/tmp_crypt/
+  run_scp_checked "$log_file" "$REMOTE_MX2_PORT" "${sql_files[@]}" root@"${REMOTE_MX2_HOST}":/home/tmp_crypt/
 
   echo "OK: SCP and remote retention done" >>"$log_file" 2>&1
   echo -e "\nLocking Up\n" >>"$log_file" 2>&1
@@ -266,10 +266,10 @@ push_web_archives_to_mx2() {
     return 1
   fi
 
-  run_scp_checked "$log_file" -P 1622 "${web_files[@]}" root@mx-secondary.example.org:/home/tmp_crypt/
+  run_scp_checked "$log_file" "$REMOTE_MX2_PORT" "${web_files[@]}" root@"${REMOTE_MX2_HOST}":/home/tmp_crypt/
 
   # ---- Remote retention: keep last 7 web archives offsite ----
-  ssh -q -o LogLevel=ERROR -p 1622 root@mx-secondary.example.org 'cd /home/tmp_crypt/ && ls -t -d bck_* 2>/dev/null | tail -n +8 | xargs -r rm -Rf --' >>"$log_file" 2>&1
+  ssh -q -o LogLevel=ERROR -p "$REMOTE_MX2_PORT" root@"$REMOTE_MX2_HOST" 'cd /home/tmp_crypt/ && ls -t -d bck_* 2>/dev/null | tail -n +8 | xargs -r rm -Rf --' >>"$log_file" 2>&1
 
   echo "OK: SCP and remote retention done" >>"$log_file" 2>&1
   echo -e "\nLocking Up\n" >>"$log_file" 2>&1
