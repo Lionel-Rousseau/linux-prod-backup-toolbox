@@ -39,7 +39,8 @@ CURRENT_LOG_FILE="/var/log/backup_orchestration.log"
 LOG_FILE="$CURRENT_LOG_FILE"
 CURRENT_JOB_NAME="init"
 CURRENT_REMOTE_HOST=""
-CURRENT_MAPPER_NAME=""
+CURRENT_REMOTE_PORT=""
+CURRENT_REMOTE_MAPPER_NAME=""
 CURRENT_REMOTE_LUKS_OPEN=0
 
 # ============================================================================
@@ -128,10 +129,16 @@ run_scp_checked() {
 # ============================================================================
 remote_prepare_luks() {
   local remote_host="$1"
-  local crypt_file="$2"
-  local mapper_name="$3"
+  local remote_port="$2"
+  local crypt_file="$3"
+  local mapper_name="$4"
 
-  ssh -4q -T -o LogLevel=ERROR root@"$remote_host" 'bash -s' <<EOF
+  CURRENT_REMOTE_HOST="$remote_host"
+  CURRENT_REMOTE_PORT="$remote_port"
+  CURRENT_REMOTE_MAPPER_NAME="$mapper_name"
+  CURRENT_REMOTE_LUKS_OPEN=1
+
+  ssh -q -T -p "$remote_port" -o LogLevel=ERROR root@"$remote_host" 'bash -s' <<EOF
 set -Eeuo pipefail
 LOG_FILE="/var/log/${mapper_name}.remote.log"
 . /root/backup-orchestrator/luks_functions.sh
@@ -141,15 +148,21 @@ EOF
 
 remote_close_luks() {
   local remote_host="$1"
-  local mapper_name="$2"
+  local remote_port="$2"
+  local mapper_name="$3"
 
-  ssh -4q -T -o LogLevel=ERROR root@"$remote_host" 'bash -s' <<EOF
+  ssh -q -T -p "$remote_port" -o LogLevel=ERROR root@"$remote_host" 'bash -s' <<EOF
 set -Eeuo pipefail
 LOG_FILE="/var/log/${mapper_name}.remote.log"
 . /root/backup-orchestrator/luks_functions.sh
 close_luks_mount "$mapper_name" "/home/tmp_crypt"
 assert_no_backup_luks_left_open "/home/tmp_crypt"
 EOF
+
+  CURRENT_REMOTE_LUKS_OPEN=0
+  CURRENT_REMOTE_HOST=""
+  CURRENT_REMOTE_PORT=""
+  CURRENT_REMOTE_MAPPER_NAME=""
 }
 
 # ============================================================================
@@ -177,7 +190,7 @@ run_rsync_daemon_with_remote_luks() {
   remote_prepare_luks "$remote_host" "$crypt_file" "$mapper_name" >>"$log_file" 2>&1
 
   CURRENT_REMOTE_HOST="$remote_host"
-  CURRENT_MAPPER_NAME="$mapper_name"
+  CURRENT_REMOTE_MAPPER_NAME="$mapper_name"
   CURRENT_REMOTE_LUKS_OPEN=1
 
   run_rsync_checked "$log_file" \
@@ -196,7 +209,7 @@ run_rsync_daemon_with_remote_luks() {
 
   CURRENT_REMOTE_LUKS_OPEN=0
   CURRENT_REMOTE_HOST=""
-  CURRENT_MAPPER_NAME=""
+  CURRENT_REMOTE_MAPPER_NAME=""
 
   finish_job "$log_file" "$start_time"
 }
@@ -223,7 +236,7 @@ run_rsync_ssh_with_remote_luks() {
   remote_prepare_luks "$remote_host" "$crypt_file" "$mapper_name" >>"$log_file" 2>&1
 
   CURRENT_REMOTE_HOST="$remote_host"
-  CURRENT_MAPPER_NAME="$mapper_name"
+  CURRENT_REMOTE_MAPPER_NAME="$mapper_name"
   CURRENT_REMOTE_LUKS_OPEN=1
 
   run_rsync_checked "$log_file" \
@@ -241,7 +254,7 @@ run_rsync_ssh_with_remote_luks() {
 
   CURRENT_REMOTE_LUKS_OPEN=0
   CURRENT_REMOTE_HOST=""
-  CURRENT_MAPPER_NAME=""
+  CURRENT_REMOTE_MAPPER_NAME=""
 
   finish_job "$log_file" "$start_time"
 }
@@ -299,16 +312,17 @@ error_handler() {
   fi
 
   # If we crashed with a remote LUKS volume still open, close it now.
-  if [ "${CURRENT_REMOTE_LUKS_OPEN:-0}" -eq 1 ] && [ -n "${CURRENT_REMOTE_HOST:-}" ] && [ -n "${CURRENT_MAPPER_NAME:-}" ]; then
+  if [ "${CURRENT_REMOTE_LUKS_OPEN:-0}" -eq 1 ] && [ -n "${CURRENT_REMOTE_HOST:-}" ] && [ -n "${CURRENT_REMOTE_MAPPER_NAME:-}" ]; then
     {
       echo ""
       echo "Emergency remote cleanup on ${CURRENT_REMOTE_HOST} ..."
     } >>"$CURRENT_LOG_FILE" 2>&1
 
-    remote_close_luks "$CURRENT_REMOTE_HOST" "$CURRENT_MAPPER_NAME" >>"$CURRENT_LOG_FILE" 2>&1 || true
+    remote_close_luks "$CURRENT_REMOTE_HOST" "$CURRENT_REMOTE_PORT" "$CURRENT_REMOTE_MAPPER_NAME" >>"$CURRENT_LOG_FILE" 2>&1 || true
     CURRENT_REMOTE_LUKS_OPEN=0
     CURRENT_REMOTE_HOST=""
-    CURRENT_MAPPER_NAME=""
+    CURRENT_REMOTE_PORT=""
+    CURRENT_REMOTE_MAPPER_NAME=""
   fi
 
   body="$(
