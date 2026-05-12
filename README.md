@@ -156,11 +156,12 @@ The orchestrator is driven by a systemd timer that fires once a day at
 copy it to `/etc/systemd/system/`, enable it with
 `systemctl enable --now backup-nightly.timer`, and you are done.
 
-Per-node scripts are designed to be invokable independently as well,
-each one accepts no arguments, reads its configuration from environment
+Per-node scripts are designed to be invokable independently as well.
+Each one accepts no arguments, reads its configuration from environment
 variables (or hardcoded paths if you prefer), writes structured logs to
-`/var/log/`, and exits with a non-zero status on failure (or `24` on the
-benign rsync race condition, which the orchestrator silently ignores).
+`/var/log/`, and exits with a non-zero status on failure. `rsync` exit 
+code 24 is treated as a benign condition by node wrappers and does 
+not make the job fail.
 
 The minimum-viable configuration is described in
 [`examples/env.example`](examples/env.example).
