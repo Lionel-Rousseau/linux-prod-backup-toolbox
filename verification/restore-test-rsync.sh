@@ -52,7 +52,7 @@ usage() {
 Usage: $(basename "$0") --source <user@host:path> [options]
 
 Required:
-  --source <SPEC>      rsync source spec, e.g. root@mx-secondary.example.org:/home/Backup_NasHome/sample/
+  --source <SPEC>      rsync source spec, e.g. root@mx-secondary.example.org:/home/Backup_NasCore/sample/
 
 Options:
   --scratch <PATH>     scratch directory for the restore (default: /tmp/restore-test-<timestamp>)
