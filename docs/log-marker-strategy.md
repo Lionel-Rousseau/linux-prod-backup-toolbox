@@ -1,8 +1,8 @@
 # Log-marker strategy
 
 Why does the orchestrator scan logs for specific strings instead of just
-trusting exit codes? Experience has showed me that exit codes  cannot 
-fully be  trusted, at leat, with the tools I'm using.
+trusting exit codes? Experience has  me that exit codes  cannot 
+fully be  trusted, at least, with the tools I'm using.
 
 ## The four checks
 
@@ -79,4 +79,5 @@ A normal night produces zero email traffic. The operator gets a mail
 **only** when something is wrong. This is deliberate: if a mail arrives, 
 it means action is needed and it avoids alert fatigue.
 
-The counterpart is that regular checks is mandatory, silent failures will find the gaps.
+The counterpart is that regular checks are mandatory, silent failures
+will find the gaps.
