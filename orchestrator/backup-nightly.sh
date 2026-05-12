@@ -196,18 +196,22 @@ sync_file_to_host() {
 sync_support_files() {
   log "START support_files_sync"
 
-  sync_file_to_host "web-mail.example.org"  "$BASE/luks_functions.sh" "/root/backup-orchestrator/luks_functions.sh" "700" "scp"
-  sync_file_to_host "web-mail.example.org"  "$BASE/.smtp_pass"        "/root/backup-orchestrator/.smtp_pass"        "600" "scp"
+  local p_web p_mx p_nas
+  p_web="$(host_port web-mail.example.org)"
+  p_mx="$(host_port mx-secondary.example.org)"
+  p_nas="$(host_port nas-home.example.net)"
 
-  sync_file_to_host "mx-secondary.example.org" "$BASE/luks_functions.sh" "/root/backup-orchestrator/luks_functions.sh" "700" "scp"
-  sync_file_to_host "mx-secondary.example.org" "$BASE/.smtp_pass"        "/root/backup-orchestrator/.smtp_pass"        "600" "scp"
+  sync_file_to_host "web-mail.example.org"     "$p_web" "$BASE/luks_functions.sh" "/root/backup-orchestrator/luks_functions.sh" "700" "scp"
+  sync_file_to_host "web-mail.example.org"     "$p_web" "$BASE/.smtp_pass"        "/root/backup-orchestrator/.smtp_pass"        "600" "scp"
 
-  sync_file_to_host "nas-core.example.net" "$BASE/luks_functions.sh" "/root/backup-orchestrator/luks_functions.sh" "700" "pipe"
-  sync_file_to_host "nas-core.example.net" "$BASE/.smtp_pass"        "/root/backup-orchestrator/.smtp_pass"        "600" "pipe"
+  sync_file_to_host "mx-secondary.example.org" "$p_mx"  "$BASE/luks_functions.sh" "/root/backup-orchestrator/luks_functions.sh" "700" "scp"
+  sync_file_to_host "mx-secondary.example.org" "$p_mx"  "$BASE/.smtp_pass"        "/root/backup-orchestrator/.smtp_pass"        "600" "scp"
+
+  sync_file_to_host "nas-home.example.net"     "$p_nas" "$BASE/luks_functions.sh" "/root/backup-orchestrator/luks_functions.sh" "700" "pipe"
+  sync_file_to_host "nas-home.example.net"     "$p_nas" "$BASE/.smtp_pass"        "/root/backup-orchestrator/.smtp_pass"        "600" "pipe"
 
   log "OK support_files_sync"
 }
-
 # ============================================================================
 # Job runner with deadline, log fetch, and outcome assessment
 # ============================================================================
