@@ -267,8 +267,8 @@ run_rsync_daemon_with_remote_luks \
 
 # ---- Web-mail rootfs → nas-core (LAN, no LUKS, internal network) ----
 run_rsync_plain \
-  "WebMail_on_NasHome" \
-  "/var/log/backupWebMail_NasHome.log" \
+  "WebMail_on_NasCore" \
+  "/var/log/backupWebMail_NasCore.log" \
   "/" \
   "root@nas-core.example.net:/volume1/WebMail/" \
   "${WEB_MAIL_ROOT_RSYNC_ARGS[@]}"
