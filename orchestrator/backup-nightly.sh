@@ -59,7 +59,7 @@ declare -a SUMMARY=()
 # to a remote takes the port as an explicit parameter; the registry is only
 # used by the caller layer to resolve host -> port.
 declare -A HOST_PORTS=(
-  [nas-home.example.net]=1249
+  [nas-core.example.net]=1249
   [web-mail.example.org]=1622
   [mx-secondary.example.org]=1622
 )
