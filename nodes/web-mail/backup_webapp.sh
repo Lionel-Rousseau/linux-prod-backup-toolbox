@@ -45,10 +45,12 @@ CURRENT_LOG_FILE="/var/log/backupWebApp.log"
 LOG_FILE="$CURRENT_LOG_FILE"
 CURRENT_JOB_NAME="init"
 CURRENT_REMOTE_HOST=""
+CURRENT_REMOTE_PORT=""
 CURRENT_REMOTE_MAPPER_NAME=""
 CURRENT_REMOTE_LUKS_OPEN=0
 
 REMOTE_MX2_HOST="mx-secondary"
+REMOTE_MX2_PORT=1622
 LOCAL_ARCHIVE_ROOT="/root"
 WEBROOT="/var/www/html"
 
@@ -78,14 +80,16 @@ finish_job() {
 
 remote_prepare_luks() {
   local remote_host="$1"
-  local crypt_file="$2"
-  local mapper_name="$3"
+  local remote_port="$2"
+  local crypt_file="$3"
+  local mapper_name="$4"
 
   CURRENT_REMOTE_HOST="$remote_host"
+  CURRENT_REMOTE_PORT="$remote_port"
   CURRENT_REMOTE_MAPPER_NAME="$mapper_name"
   CURRENT_REMOTE_LUKS_OPEN=1
 
-  ssh -q -o LogLevel=ERROR root@"$remote_host" 'bash -s' <<EOF
+  ssh -q -T -p "$remote_port" -o LogLevel=ERROR root@"$remote_host" 'bash -s' <<EOF
 set -Eeuo pipefail
 LOG_FILE="/var/log/${mapper_name}.remote.log"
 . /root/backup-orchestrator/luks_functions.sh
@@ -95,9 +99,10 @@ EOF
 
 remote_close_luks() {
   local remote_host="$1"
-  local mapper_name="$2"
+  local remote_port="$2"
+  local mapper_name="$3"
 
-  ssh -q -o LogLevel=ERROR root@"$remote_host" 'bash -s' <<EOF
+  ssh -q -T -p "$remote_port" -o LogLevel=ERROR root@"$remote_host" 'bash -s' <<EOF
 set -Eeuo pipefail
 LOG_FILE="/var/log/${mapper_name}.remote.log"
 . /root/backup-orchestrator/luks_functions.sh
@@ -107,6 +112,7 @@ EOF
 
   CURRENT_REMOTE_LUKS_OPEN=0
   CURRENT_REMOTE_HOST=""
+  CURRENT_REMOTE_PORT=""
   CURRENT_REMOTE_MAPPER_NAME=""
 }
 
@@ -153,7 +159,7 @@ run_webfolder_rsync_to_mx2() {
   echo -e "\n\n\n---Rsyncing WebFolder\n" >>"$log_file" 2>&1
   echo -e "\nOpening Lock\n" >>"$log_file" 2>&1
 
-  remote_prepare_luks "$REMOTE_MX2_HOST" "/home/Backup_WebApp.crypt" "Backup_WebApp_crypt" >>"$log_file" 2>&1
+  remote_prepare_luks "$REMOTE_MX2_HOST" "$REMOTE_MX2_PORT" "/home/Backup_WebApp.crypt" "Backup_WebApp_crypt" >>"$log_file" 2>&1
 
   echo -e "RSync WebFolder : $(date)\n" >>"$log_file" 2>&1
   run_rsync_checked "$log_file" \
@@ -168,7 +174,7 @@ run_webfolder_rsync_to_mx2() {
     --stats
 
   echo -e "\nLocking Up\n" >>"$log_file" 2>&1
-  remote_close_luks "$REMOTE_MX2_HOST" "Backup_WebApp_crypt" >>"$log_file" 2>&1
+  remote_close_luks   "$REMOTE_MX2_HOST" "$REMOTE_MX2_PORT" "Backup_WebApp_crypt" >>"$log_file" 2>&1
 }
 
 # ============================================================================
@@ -216,7 +222,7 @@ push_sql_archives_to_mx2() {
   echo -e "\n\n\n---SQL push\n" >>"$log_file" 2>&1
   echo -e "\nOpening Lock\n" >>"$log_file" 2>&1
 
-  remote_prepare_luks "$REMOTE_MX2_HOST" "/home/Backup_WebAppSQL.crypt" "Backup_WebAppSQL_crypt" >>"$log_file" 2>&1
+  remote_prepare_luks "$REMOTE_MX2_HOST" "$REMOTE_MX2_PORT" "/home/Backup_WebAppSQL.crypt" "Backup_WebAppSQL_crypt" >>"$log_file" 2>&1
 
   # ---- Remote retention: keep last 14 SQL dumps offsite ----
   ssh -q -o LogLevel=ERROR -p 1622 root@mx-secondary.example.org 'cd /home/tmp_crypt/ && ls -t Backup-* 2>/dev/null | tail -n +15 | xargs -r rm --' >>"$log_file" 2>&1
@@ -236,7 +242,7 @@ push_sql_archives_to_mx2() {
   echo "OK: SCP and remote retention done" >>"$log_file" 2>&1
   echo -e "\nLocking Up\n" >>"$log_file" 2>&1
 
-  remote_close_luks "$REMOTE_MX2_HOST" "Backup_WebAppSQL_crypt" >>"$log_file" 2>&1
+  remote_close_luks   "$REMOTE_MX2_HOST" "$REMOTE_MX2_PORT" "Backup_WebAppSQL_crypt" >>"$log_file" 2>&1
 }
 
 # ============================================================================
@@ -249,7 +255,7 @@ push_web_archives_to_mx2() {
   echo -e "\n\n\n---Web archive push\n" >>"$log_file" 2>&1
   echo -e "\nOpening Lock\n" >>"$log_file" 2>&1
 
-  remote_prepare_luks "$REMOTE_MX2_HOST" "/home/Backup_WebAppArchive.crypt" "Backup_WebAppArchive_crypt" >>"$log_file" 2>&1
+  remote_prepare_luks "$REMOTE_MX2_HOST" "$REMOTE_MX2_PORT" "/home/Backup_WebAppArchive.crypt" "Backup_WebAppArchive_crypt" >>"$log_file" 2>&1
 
   shopt -s nullglob
   web_files=( "${LOCAL_ARCHIVE_ROOT}"/bck_*.tar.gz )
@@ -268,7 +274,7 @@ push_web_archives_to_mx2() {
   echo "OK: SCP and remote retention done" >>"$log_file" 2>&1
   echo -e "\nLocking Up\n" >>"$log_file" 2>&1
 
-  remote_close_luks "$REMOTE_MX2_HOST" "Backup_WebAppArchive_crypt" >>"$log_file" 2>&1
+  remote_close_luks   "$REMOTE_MX2_HOST" "$REMOTE_MX2_PORT" "Backup_WebAppArchive_crypt" >>"$log_file" 2>&1
 }
 
 # ============================================================================
@@ -299,9 +305,10 @@ error_handler() {
       echo "Emergency remote cleanup on ${CURRENT_REMOTE_HOST} for ${CURRENT_REMOTE_MAPPER_NAME} ..."
     } >>"$CURRENT_LOG_FILE" 2>&1
 
-    remote_close_luks "$CURRENT_REMOTE_HOST" "$CURRENT_REMOTE_MAPPER_NAME" >>"$CURRENT_LOG_FILE" 2>&1 || true
+    remote_close_luks "$CURRENT_REMOTE_HOST" "$CURRENT_REMOTE_PORT" "$CURRENT_REMOTE_MAPPER_NAME" >>"$CURRENT_LOG_FILE" 2>&1 || true
     CURRENT_REMOTE_LUKS_OPEN=0
     CURRENT_REMOTE_HOST=""
+    CURRENT_REMOTE_PORT=""
     CURRENT_REMOTE_MAPPER_NAME=""
   fi
 
