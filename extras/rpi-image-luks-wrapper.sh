@@ -53,7 +53,7 @@ init-only:
 
 open-only:
   --key-cmd <CMD>        shell command that prints the LUKS key on stdout
-                         (default: ssh nas-home 'cat /volume1/NetBackup/.ash')
+                         (default: ssh nas-core 'cat /volume1/NetBackup/.ash')
 
   -h, --help             show this help
 
