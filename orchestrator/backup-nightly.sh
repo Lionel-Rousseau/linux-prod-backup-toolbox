@@ -148,7 +148,7 @@ sync_file_to_host() {
   local perm="$5"
   local method="$6"
 
-  local tmp_file local_sum remote_sum remote_dire
+  local tmp_file local_sum remote_sum remote_dir
   tmp_file="${remote_file}.tmp.$$"
   remote_dir="$(dirname "$remote_file")"
   local_sum="$(sha256sum "$local_file" | awk '{print $1}')"
@@ -218,7 +218,7 @@ sync_support_files() {
   local p_web p_mx p_nas
   p_web="$(host_port web-mail.example.org)"
   p_mx="$(host_port mx-secondary.example.org)"
-  p_nas="$(host_port nas-coree.example.net)"
+  p_nas="$(host_port nas-core.example.net)"
 
   sync_file_to_host "web-mail.example.org"     "$p_web" "$BASE/luks_functions.sh" "/root/backup-orchestrator/luks_functions.sh" "700" "scp"
   sync_file_to_host "web-mail.example.org"     "$p_web" "$BASE/.smtp_pass"        "/root/backup-orchestrator/.smtp_pass"        "600" "scp"
@@ -427,7 +427,7 @@ main() {
     "1249" \
     "10800" \
     "FINISH :" \
-    "/var/log/backupNasCore.log,/var/log/backupWebApp.log" \
+    "/var/log/backupNasCore.log,/var/log/backupWebApp.log,/var/log/backupMail.log" \
     "bash /volume1/NetBackup/backup.sh"
 
   # ---- Job 02: web-mail node cross-replicates to mx-secondary and nas-core ----
