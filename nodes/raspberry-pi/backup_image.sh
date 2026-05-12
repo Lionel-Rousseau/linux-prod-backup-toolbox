@@ -2,6 +2,9 @@
 # ----------------------------------------------------------------------------
 # nodes/raspberry-pi/backup_image.sh - RPi root image to remote storage
 # ----------------------------------------------------------------------------
+# This Raspberry Pi backup script is provided as a standalone node example 
+# and is not currently driven by the nightly orchestrator.
+#
 # Runs on each Raspberry Pi node (RaspiOS) via cron. Mounts the offsite
 # backup share (sshfs to mx-secondary), produces a compact image of the
 # running root using RonR's image-backup utility, and unmounts cleanly.
