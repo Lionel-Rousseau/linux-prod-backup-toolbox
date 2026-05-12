@@ -1,0 +1,16 @@
+# This file should contain the SMTP password as a single line, with NO
+# trailing newline if your swaks build is strict about it (most aren't).
+# Permissions MUST be 600 and owner MUST be root. The orchestrator and
+# every node read this file via `cat`.
+#
+# Example layout, for documentation only — replace with the real value:
+#
+#     replace-me-with-the-actual-smtp-password
+#
+# Recommended hardening (roadmap):
+#   - move the secret into a HashiCorp Vault static secret, fetch with
+#     short-lived token at run start, write into a tmpfs-backed file,
+#     remove on exit.
+#   - or: use a dedicated SMTP relay that only accepts authentication
+#     from the orchestrator's static IP and only allows sending to a
+#     short list of operator addresses.
