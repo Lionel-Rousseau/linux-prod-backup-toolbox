@@ -68,12 +68,12 @@ linux-prod-backup-toolbox/
 │   │   ├── backup.sh                   Nightly script
 │   │   └── mv2usb.sh                   Daily mirror to detachable 8TB USB
 │   ├── web-mail/                       Web + mail Server (Ubuntu LTS)
-│   │   ├── backup                      System backup
+│   │   ├── backup.sh                   System backup
 │   │   ├── backup_webapp.sh            Web & MySQL daily backups
 │   │   ├── backup_monthly_sql.sh       MySQL monthly specific backup
 │   │   └── log_healthcheck.sh          Log checks
 │   ├── mx-secondary/                   secondary MX + offsite storage (Ubuntu LTS)
-│   │   ├── backup                      System backup
+│   │   ├── backup.sh                   System backup
 │   │   └── log_healthcheck.sh          Log checks
 │   └── raspberry-pi/                   IoT-automation Pi nodes
 │       └── backup_image.sh             Imaging script example
