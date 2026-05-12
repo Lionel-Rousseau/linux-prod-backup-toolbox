@@ -148,9 +148,28 @@ sync_file_to_host() {
   local perm="$5"
   local method="$6"
 
-  local tmp_file local_sum remote_sum
+  local tmp_file local_sum remote_sum remote_dire
   tmp_file="${remote_file}.tmp.$$"
+  remote_dir="$(dirname "$remote_file")"
   local_sum="$(sha256sum "$local_file" | awk '{print $1}')"
+
+ssh -q -T -p "$port" -o LogLevel=ERROR -o BatchMode=yes -o ConnectTimeout=20 \
+      root@"$host" "mkdir -p '$remote_dir'" >>"$MASTER_LOG" 2>&1 || {
+    log "ERROR: cannot create remote directory $host:$remote_dir"
+    return 1
+  }
+
+  remote_sum="$(ssh -q -T -p "$port" -o LogLevel=ERROR -o BatchMode=yes -o ConnectTimeout=20 \
+                root@"$host" "test -f '$remote_file' && sha256sum '$remote_file' | awk '{print \$1}'" 2>/dev/null || true)"
+  if [ "$local_sum" = "$remote_sum" ]; then
+    ssh -q -T -p "$port" -o LogLevel=ERROR -o BatchMode=yes -o ConnectTimeout=20 \
+        root@"$host" "chmod $perm '$remote_file'" >>"$MASTER_LOG" 2>&1 || {
+      log "ERROR: chmod of up-to-date $(basename "$remote_file") on $host failed"
+      return 1
+    }
+    log "$host:$port : $(basename "$remote_file") already up-to-date"
+    return 0
+  fi
 
   case "$method" in
     scp)
@@ -199,7 +218,7 @@ sync_support_files() {
   local p_web p_mx p_nas
   p_web="$(host_port web-mail.example.org)"
   p_mx="$(host_port mx-secondary.example.org)"
-  p_nas="$(host_port nas-home.example.net)"
+  p_nas="$(host_port nas-coree.example.net)"
 
   sync_file_to_host "web-mail.example.org"     "$p_web" "$BASE/luks_functions.sh" "/root/backup-orchestrator/luks_functions.sh" "700" "scp"
   sync_file_to_host "web-mail.example.org"     "$p_web" "$BASE/.smtp_pass"        "/root/backup-orchestrator/.smtp_pass"        "600" "scp"
@@ -207,8 +226,8 @@ sync_support_files() {
   sync_file_to_host "mx-secondary.example.org" "$p_mx"  "$BASE/luks_functions.sh" "/root/backup-orchestrator/luks_functions.sh" "700" "scp"
   sync_file_to_host "mx-secondary.example.org" "$p_mx"  "$BASE/.smtp_pass"        "/root/backup-orchestrator/.smtp_pass"        "600" "scp"
 
-  sync_file_to_host "nas-home.example.net"     "$p_nas" "$BASE/luks_functions.sh" "/root/backup-orchestrator/luks_functions.sh" "700" "pipe"
-  sync_file_to_host "nas-home.example.net"     "$p_nas" "$BASE/.smtp_pass"        "/root/backup-orchestrator/.smtp_pass"        "600" "pipe"
+  sync_file_to_host "nas-core.example.net"     "$p_nas" "$BASE/luks_functions.sh" "/root/backup-orchestrator/luks_functions.sh" "700" "pipe"
+  sync_file_to_host "nas-core.example.net"     "$p_nas" "$BASE/.smtp_pass"        "/root/backup-orchestrator/.smtp_pass"        "600" "pipe"
 
   log "OK support_files_sync"
 }
