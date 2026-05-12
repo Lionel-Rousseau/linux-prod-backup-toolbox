@@ -76,29 +76,26 @@ finish_job() {
 # rsync exit code 24 means "some files vanished during transfer". On a
 # live filesystem (logs being rotated, mail spool, etc.) this is benign
 # and not worth waking the operator up for. Anything else propagates.
-run_rsync_checked() {
+run_scp_checked() {
   local log_file="$1"
-  shift
+  local port="$2"
+  local src="$3"
+  local dst="$4"
   local rsync_rc=0
 
   set +e
-  rsync "$@" >>"$log_file" 2>&1
+  rsync -a \
+    -e "ssh -q -T -o LogLevel=ERROR -p $port -i /root/.ssh/id_ed25519 -l root -x" \
+    "$src" "$dst" >>"$log_file" 2>&1
   rsync_rc=$?
   set -e
 
-  case "$rsync_rc" in
-    0)
-      return 0
-      ;;
-    24)
-      echo "WARNING: rsync returned rc=24 (some files vanished during transfer)" >>"$log_file"
-      return 0
-      ;;
-    *)
-      echo "ERROR: rsync failed with rc=$rsync_rc" >>"$log_file"
-      return "$rsync_rc"
-      ;;
-  esac
+  if [ "$rsync_rc" -ne 0 ]; then
+    echo "ERROR: rsync(copy) failed with rc=$rsync_rc for src=$src dst=$dst" >>"$log_file"
+    return "$rsync_rc"
+  fi
+
+  return 0
 }
 
 # scp-via-rsync helper, used to copy individual files between hosts with
