@@ -8,9 +8,9 @@
 #   * the offsite LUKS backup containers populated by web-mail and nas-core
 #
 # It owns three responsibilities:
-#   1. Mirror the *web-mail* node's rootfs to its own disk (LUKS) and to
-#      the core NAS (LAN).
-#   2. Pull the vmail spool from web-mail to core NAS, decrypted on-the-fly
+#   1. Mirror this mx-secondary node root filesystem to *web-mail* to its own
+#      disk (LUKS) and to the nas-core (LAN).
+#   2. Pull the vmail spool from web-mail to nas-core, decrypted on-the-fly
 #      through a local LUKS volume that was populated earlier by web-mail.
 #   3. Cross-replicate the consolidated NAS datasets to web-mail (dual-LUKS
 #      pattern: source on a local LUKS, destination on a remote LUKS).
