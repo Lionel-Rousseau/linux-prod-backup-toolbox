@@ -228,9 +228,7 @@ push_sql_archives_to_mx2() {
   ssh -q -o LogLevel=ERROR -p "$REMOTE_MX2_PORT" root@"$REMOTE_MX2_HOST" 'cd /home/tmp_crypt/ && ls -t Backup-* 2>/dev/null | tail -n +15 | xargs -r rm --' >>"$log_file" 2>&1
   ssh -q -o LogLevel=ERROR -p "$REMOTE_MX2_PORT" root@"$REMOTE_MX2_HOST" 'df -h /home/tmp_crypt; df -ih /home/tmp_crypt; mount | grep "/home/tmp_crypt"' >>"$log_file" 2>&1
 
-  shopt -s nullglob
-  sql_files=( $(ls -t "${LOCAL_ARCHIVE_ROOT}"/Backup-*.sql 2>/dev/null | head -n 1) )
-  shopt -u nullglob
+  mapfile -t sql_files < <(find "${LOCAL_ARCHIVE_ROOT}" -maxdepth 1 -name 'Backup-*.sql' -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -n 1 | awk '{print $2}')
 
   if [ "${#sql_files[@]}" -eq 0 ]; then
     echo "ERROR: no SQL file to transfer (${LOCAL_ARCHIVE_ROOT}/Backup-*.sql)" >>"$log_file"
