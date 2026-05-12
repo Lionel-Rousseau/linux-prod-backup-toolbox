@@ -142,7 +142,9 @@ not give the attacker the LUKS key). Check
   appear (`scp:`, `rsync:`, `ERROR:`, `Permission denied`,
   `Connection timed out`, `Broken pipe`, `not mounted`, `LOCK_BUSY`,
   `No such file or directory`). Anything failing those checks mark
-  the run as `FAIL`, and only `FAIL` triggers an email.
+  the run as `FAIL`, and only `FAIL` triggers an email. Node-level mail
+  alerts are kept as a fallback, while the orchestrator remains the
+  primary notification source.
 
 ---
 
