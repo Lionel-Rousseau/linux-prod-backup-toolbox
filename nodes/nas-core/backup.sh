@@ -192,7 +192,7 @@ run_rsync_daemon_with_remote_luks() {
   remote_prepare_luks "$remote_host" "$remote_port" "$crypt_file" "$mapper_name" >>"$log_file" 2>&1
 
   run_rsync_checked "$log_file" \
-    -ah --partial --stats \
+    -ah --partial \
     --password-file=/volume1/NetBackup/pass2.pwd \
     -e "ssh -q -T -o LogLevel=ERROR -p $remote_port -i /root/.ssh/id_ed25519 -l root -x" \
     "${extra_rsync_args[@]}" \
@@ -263,7 +263,7 @@ run_rsync_daemon_plain() {
   begin_job "$log_file"
 
   run_rsync_checked "$log_file" \
-    -ah --partial --stats \
+    -ah --partial \
     --password-file=/volume1/NetBackup/pass2.pwd \
     -e "ssh -q -T -o LogLevel=ERROR -p $remote_port -i /root/.ssh/id_ed25519 -l root -x" \
     "${extra_rsync_args[@]}" \
