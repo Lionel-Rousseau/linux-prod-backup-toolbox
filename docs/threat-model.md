@@ -26,17 +26,17 @@ This tells you whether this is sized for your environment.
    cannot reach from the compromised host alone.
 3. **Ransomware reaching the LAN** through any of: a clicked attachment,
    a vulnerable browser, a compromised piece of home-automation gear.
-   The detachable USB rotation gives us an air-gapped copy that the
-   ransomware cannot encrypt.
-4. **Silent data corruption** — data degradation on a single drive, a buggy
+   The detachable USB rotation gives us a logically offline USB copy
+   outside the active write window that the ransomware cannot encrypt.
+5. **Silent data corruption** — data degradation on a single drive, a buggy
    filesystem, a backup script that silently stops working. Caught by
    the log scan (every night) and by the restoration tests (twice a
    month). See [`real-incidents.md`](real-incidents.md) for the actual
    instances we have detected.
-5. **Operator error** — `rm -rf /important` at 14:30. Recovered from the
+6. **Operator error** — `rm -rf /important` at 14:30. Recovered from the
    rolling local archives (3 SQL dumps, 1 web archive) for fast cases,
    from the offsite copies for older state.
-6. **Theft of one of the OVH disks** by a non-targeted adversary 
+7. **Theft of one of the OVH disks** by a non-targeted adversary 
    (decommissioning the wrong drive, leaked spare). LUKS containers protect 
    the backup datasets at rest. However, the OS, configuration files, logs, 
    and live application data outside the LUKS containers remain readable on 
