@@ -346,7 +346,7 @@ run_rsync_daemon_with_remote_luks \
   "/volume1/NetBackup/" \
   "root@mx-secondary.example.org::NasCore" \
   "mx-secondary.example.org" \
-  1622 \
+  "1622" \
   "/home/NasCore.crypt" \
   "NasCore_crypt" \
   --exclude '@eaDir'
@@ -358,7 +358,7 @@ run_rsync_daemon_with_remote_luks \
   "/volume1/WebApp/" \
   "root@mx-secondary.example.org::WebApp" \
   "mx-secondary.example.org" \
-  1622 \
+  "1622" \
   "/home/Backup_WebApp.crypt" \
   "Backup_WebApp_crypt" \
   --exclude '@eaDir'
@@ -370,7 +370,7 @@ run_rsync_ssh_with_remote_luks \
   "/volume1/Mail/" \
   "root@web-mail.example.org:/home/tmp_crypt/" \
   "web-mail.example.org" \
-  1622 \
+  "1622" \
   "/home/Backup_Mail.crypt" \
   "Backup_Mail_crypt" \
   --exclude '@eaDir'
