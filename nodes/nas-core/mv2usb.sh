@@ -23,6 +23,13 @@ LOG=/var/log/backupUSB.log
 
 echo -e "START : $(date)\n" > "$LOG" 2>&1
 
+USB_ROOT="/volumeUSB1/usbshare"
+if ! mountpoint -q "$USB_ROOT"; then
+  echo "ERROR: USB share not mounted at $USB_ROOT, aborting." >> "$LOG" 2>&1
+  exit 1
+fi
+
+
 mirror_dataset() {
   local label="$1"
   local src="$2"
