@@ -44,10 +44,12 @@ CURRENT_LOCAL_MAPPER_NAME=""
 CURRENT_LOCAL_LUKS_OPEN=0
 
 CURRENT_REMOTE_HOST=""
+CURRENT_REMOTE_PORT=""
 CURRENT_REMOTE_MAPPER_NAME=""
 CURRENT_REMOTE_LUKS_OPEN=0
 
-CTRL_WEB_MAIL_HOST="web-mail"
+CTRL_WEB_MAIL_HOST="web-mail.example.org"
+CTRL_WEB_MAIL_PORT="1622"
 
 # ---- rsync exclusions for the mx-secondary rootfs dump ----
 # Same idea as on web-mail: never back up our own backups, never copy
@@ -241,9 +243,10 @@ run_rsync_with_remote_luks() {
   local src="$4"
   local dst="$5"
   local remote_host="$6"
-  local remote_crypt_file="$7"
-  local remote_mapper_name="$8"
-  shift 8
+  local remote_port="$7"
+  local remote_crypt_file="$8"
+  local remote_mapper_name="$9"
+  shift 9
   local -a extra_rsync_args=( "$@" )
   local start_time
 
@@ -316,9 +319,10 @@ dual_luks_section() {
   local local_crypt_file="$6"
   local local_mapper_name="$7"
   local remote_host="$8"
-  local remote_crypt_file="$9"
-  local remote_mapper_name="${10}"
-  shift 10
+  local remote_port="$9"
+  local remote_crypt_file="${10}"
+  local remote_mapper_name="${11}"
+  shift 11
   local -a extra_rsync_args=( "$@" )
 
   echo -e "\r\r============ ${title} ============\r" >>"$log_file" 2>&1
@@ -386,6 +390,7 @@ run_nas_backups_on_web_mail() {
     "/home/Backup_WebApp.crypt" \
     "Backup_WebApp_crypt" \
     "$CTRL_WEB_MAIL_HOST" \
+    "$CTRL_WEB_MAIL_PORT" \
     "/home/Backup_NasCore_WebApp.crypt" \
     "Backup_NasCore_WebApp_crypt" \
     "--delay-updates"
@@ -407,6 +412,7 @@ run_nas_backups_on_web_mail() {
     "/home/NasCore.crypt" \
     "NasCore_crypt" \
     "$CTRL_WEB_MAIL_HOST" \
+    "$CTRL_WEB_MAIL_PORT" \
     "/home/Backup_NasCore.crypt" \
     "Backup_NasCore_crypt" \
     "--delay-updates"
@@ -493,6 +499,7 @@ run_rsync_with_remote_luks \
   "/" \
   "root@web-mail.example.org:/home/tmp_crypt/" \
   "$CTRL_WEB_MAIL_HOST" \
+  "$CTRL_WEB_MAIL_PORT" \
   "/home/Backup_MX2.crypt" \
   "Backup_MX2_crypt" \
   "${MX2_ROOT_RSYNC_ARGS[@]}"
