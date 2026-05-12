@@ -176,9 +176,10 @@ run_rsync_daemon_with_remote_luks() {
   local src="$3"
   local dst="$4"
   local remote_host="$5"
-  local crypt_file="$6"
-  local mapper_name="$7"
-  shift 7
+  local remote_port="$6"
+  local crypt_file="$7"
+  local mapper_name="$8"
+  shift 8
   local -a extra_rsync_args=( "$@" )
   local start_time
 
@@ -187,16 +188,12 @@ run_rsync_daemon_with_remote_luks() {
   begin_job "$log_file"
 
   echo -e "\nOpening Lock\n" >>"$log_file"
-  remote_prepare_luks "$remote_host" "$crypt_file" "$mapper_name" >>"$log_file" 2>&1
-
-  CURRENT_REMOTE_HOST="$remote_host"
-  CURRENT_REMOTE_MAPPER_NAME="$mapper_name"
-  CURRENT_REMOTE_LUKS_OPEN=1
+  remote_prepare_luks "$remote_host" "$remote_port" "$crypt_file" "$mapper_name" >>"$log_file" 2>&1
 
   run_rsync_checked "$log_file" \
     -ah --partial --stats \
     --password-file=/volume1/NetBackup/pass2.pwd \
-    -e "ssh -q -T -o LogLevel=ERROR -p 1622 -i /root/.ssh/id_ed25519 -l root -x" \
+    -e "ssh -q -T -o LogLevel=ERROR -p $remote_port -i /root/.ssh/id_ed25519 -l root -x" \
     "${extra_rsync_args[@]}" \
     --delete \
     --ignore-errors \
@@ -205,11 +202,7 @@ run_rsync_daemon_with_remote_luks() {
     "$src" "$dst"
 
   echo -e "\nLocking Up\n" >>"$log_file"
-  remote_close_luks "$remote_host" "$mapper_name" >>"$log_file" 2>&1
-
-  CURRENT_REMOTE_LUKS_OPEN=0
-  CURRENT_REMOTE_HOST=""
-  CURRENT_REMOTE_MAPPER_NAME=""
+  remote_close_luks "$remote_host" "$remote_port" "$mapper_name" >>"$log_file" 2>&1
 
   finish_job "$log_file" "$start_time"
 }
@@ -222,9 +215,10 @@ run_rsync_ssh_with_remote_luks() {
   local src="$3"
   local dst="$4"
   local remote_host="$5"
-  local crypt_file="$6"
-  local mapper_name="$7"
-  shift 7
+  local remote_port="$6"
+  local crypt_file="$7"
+  local mapper_name="$8"
+  shift 8
   local -a extra_rsync_args=( "$@" )
   local start_time
 
@@ -233,15 +227,11 @@ run_rsync_ssh_with_remote_luks() {
   begin_job "$log_file"
 
   echo -e "\nOpening Lock\n" >>"$log_file"
-  remote_prepare_luks "$remote_host" "$crypt_file" "$mapper_name" >>"$log_file" 2>&1
-
-  CURRENT_REMOTE_HOST="$remote_host"
-  CURRENT_REMOTE_MAPPER_NAME="$mapper_name"
-  CURRENT_REMOTE_LUKS_OPEN=1
+  remote_prepare_luks "$remote_host" "$remote_port" "$crypt_file" "$mapper_name" >>"$log_file" 2>&1
 
   run_rsync_checked "$log_file" \
     -ah --partial --stats \
-    -e "ssh -q -T -o LogLevel=ERROR -p 1622 -i /root/.ssh/id_ed25519 -l root -x" \
+    -e "ssh -q -T -o LogLevel=ERROR -p $remote_port -i /root/.ssh/id_ed25519 -l root -x" \
     "${extra_rsync_args[@]}" \
     --delete \
     --ignore-errors \
@@ -250,11 +240,7 @@ run_rsync_ssh_with_remote_luks() {
     "$src" "$dst"
 
   echo -e "\nLocking Up\n" >>"$log_file"
-  remote_close_luks "$remote_host" "$mapper_name" >>"$log_file" 2>&1
-
-  CURRENT_REMOTE_LUKS_OPEN=0
-  CURRENT_REMOTE_HOST=""
-  CURRENT_REMOTE_MAPPER_NAME=""
+  remote_close_luks "$remote_host" "$remote_port" "$mapper_name" >>"$log_file" 2>&1
 
   finish_job "$log_file" "$start_time"
 }
@@ -266,7 +252,8 @@ run_rsync_daemon_plain() {
   local log_file="$2"
   local src="$3"
   local dst="$4"
-  shift 4
+  local remote_port="$5"
+  shift 5
   local -a extra_rsync_args=( "$@" )
   local start_time
 
@@ -277,7 +264,7 @@ run_rsync_daemon_plain() {
   run_rsync_checked "$log_file" \
     -ah --partial --stats \
     --password-file=/volume1/NetBackup/pass2.pwd \
-    -e "ssh -q -T -o LogLevel=ERROR -p 1622 -i /root/.ssh/id_ed25519 -l root -x" \
+    -e "ssh -q -T -o LogLevel=ERROR -p $remote_port -i /root/.ssh/id_ed25519 -l root -x" \
     "${extra_rsync_args[@]}" \
     --delete \
     --ignore-errors \
@@ -358,7 +345,8 @@ run_rsync_daemon_with_remote_luks \
   "/var/log/backupNasCore.log" \
   "/volume1/NetBackup/" \
   "root@mx-secondary.example.org::NasCore" \
-  "mx-secondary" \
+  "mx-secondary.example.org" \
+  1622 \
   "/home/NasCore.crypt" \
   "NasCore_crypt" \
   --exclude '@eaDir'
@@ -369,7 +357,8 @@ run_rsync_daemon_with_remote_luks \
   "/var/log/backupWebApp.log" \
   "/volume1/WebApp/" \
   "root@mx-secondary.example.org::WebApp" \
-  "mx-secondary" \
+  "mx-secondary.example.org" \
+  1622 \
   "/home/Backup_WebApp.crypt" \
   "Backup_WebApp_crypt" \
   --exclude '@eaDir'
@@ -380,7 +369,8 @@ run_rsync_ssh_with_remote_luks \
   "/var/log/backupMail.log" \
   "/volume1/Mail/" \
   "root@web-mail.example.org:/home/tmp_crypt/" \
-  "web-mail" \
+  "web-mail.example.org" \
+  1622 \
   "/home/Backup_Mail.crypt" \
   "Backup_Mail_crypt" \
   --exclude '@eaDir'
