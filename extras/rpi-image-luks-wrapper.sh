@@ -79,7 +79,7 @@ CONTAINER=""
 MAPPER=""
 MOUNTPOINT=""
 SIZE=""
-KEY_CMD="ssh -q -T -o LogLevel=ERROR nas-home 'cat /volume1/NetBackup/.ash'"
+KEY_CMD="ssh -q -T -o LogLevel=ERROR nas-core 'cat /volume1/NetBackup/.ash'"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
