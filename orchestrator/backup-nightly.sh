@@ -419,7 +419,7 @@ main() {
     "9000" \
     "FINISH :" \
     "/var/log/backupWebMail_MX2.log,/var/log/backupWebMail_NasCore.log" \
-    "/bin/backup"
+    "/bin/backup.sh"
 
   # ---- Job 03: web app folder + monthly DB archive ----
   run_job \
@@ -439,7 +439,7 @@ main() {
     "9000" \
     "FINISH :" \
     "/var/log/02_backupMX2_WebMail.log,/var/log/03_backupMX2_NasCore.log,/var/log/04_backupMail.log,/var/log/05_backupNasCore_WebMail.log" \
-    "/usr/bin/backup"
+    "/bin/backup.sh"
 
   # ---- Job 05: NAS mirrors the consolidated set to a detachable USB ----
   run_job \
