@@ -49,7 +49,7 @@ This tells you whether this is sized for your environment.
 
 These are the gaps. Stating them explicitly is important.
 
-1. **A targeted attacker who controls both `web-mail` AND `nas-home`.**
+1. **A targeted attacker who controls both `web-mail` AND `nas-core`.**
    They get the LUKS key, they get the cleartext on the NAS. Mitigation
    would require splitting the key holders further (HSM, Vault). This is 
    currently a roadmap item.
@@ -78,17 +78,17 @@ These are the gaps. Stating them explicitly is important.
 
 Every single layer here can fail. The MySQL daily dump can be corrupt
 because the source DB was already corrupt. The rsync mirror can be
-stale because cron stopped running. The LUKS key file on `nas-home` can
+stale because cron stopped running. The LUKS key file on `nas-core` can
 be inaccessible because the NAS is in a degraded state.
 
 The point is that **no single failure breaks the recovery chain**:
 
 | Failure                                           | Surviving copy                          |
 |---------------------------------------------------|-----------------------------------------|
-| `web-mail` host destroyed                         | `mx-secondary` (LUKS), `nas-home` (clear), USB |
-| `mx-secondary` host destroyed                     | `web-mail`, `nas-home`, USB             |
-| `nas-home` destroyed (fire, theft)                | `web-mail`, `mx-secondary`, USB (offsite) |
-| Both OVH hosts destroyed simultaneously           | `nas-home` + USB                        |
+| `web-mail` host destroyed                         | `mx-secondary` (LUKS), `nas-core` (clear), USB |
+| `mx-secondary` host destroyed                     | `web-mail`, `nas-core`, USB             |
+| `nas-core` destroyed (fire, theft)                | `web-mail`, `mx-secondary`, USB (offsite) |
+| Both OVH hosts destroyed simultaneously           | `nas-core` + USB                        |
 | Site A destroyed (NAS + USB on-site)              | `web-mail` + `mx-secondary`             |
 | Ransomware on every connected host                | The detached USB rotation               |
 
