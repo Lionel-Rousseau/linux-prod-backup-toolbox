@@ -207,10 +207,12 @@ The infrastructure and scripts described here have been built along and run
 in production since 2018. The code, design choices, and operational
 decisions, including the verification loop, the LUKS key custody
 pattern, and the multi-host orchestration, are the author's,
-accumulated over at least seven years of running this stack. The work of
-anonymising, restructuring, and documenting the existing codes
-for public release was assisted by Claude (Anthropic). Every file
-was reviewed and validated by the author before publication.
+accumulated over at least seven years of running this stack. The anonymisation 
+of the data shown and the formatting of the code and text for 
+publication were carried out with the assistance of Claude 
+(Anthropic). Everything was reviewed and validated by the author 
+before publication. The original code, the architecture, and the 
+technical choices are entirely the author's.
 
 ---
 
