@@ -218,13 +218,11 @@ technical choices are entirely the author's.
 
 ## License
 
-- Source code: [MIT](LICENSE).
-- Documentation in `docs/` and `README.md`: [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
+Source code: [MIT](LICENSE).
 
-If you reuse parts of this in your own infrastructure, attribution is
-appreciated but not legally required for the code. Pull requests with
-improvements (especially around portability, secret management, and
-testing) are welcome.
+Reuse in your own infrastructure is welcome; attribution is appreciated 
+but not required. Pull requests with improvements (especially around portability, 
+secret management, and testing) are welcome.
 
 ---
 
