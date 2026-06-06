@@ -6,7 +6,6 @@
 > caught silent failures in production.
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Docs: CC-BY-SA 4.0](https://img.shields.io/badge/docs-CC--BY--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-sa/4.0/)
 [![Bash](https://img.shields.io/badge/bash-5.x-1f425f.svg)](#)
 [![Status: production](https://img.shields.io/badge/status-production-success.svg)](#)
 
