@@ -1,4 +1,4 @@
-# linux-prod-backup-toolbox
+# Multi-host Linux backup orchestration with restore verification
 
 > Multi-host backup orchestration scripts for a small Linux infrastructure
 > operated 24/7 since 2018. `rsync`, LUKS containers, idempotent remote operations,
