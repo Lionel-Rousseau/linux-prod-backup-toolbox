@@ -5,7 +5,7 @@
 # Runs on the web+mail node. Three things, in order:
 #   1. rsync the live document root to the secondary MX (LUKS volume)
 #   2. build a dated, compressed snapshot of the document root, and a fresh
-#      mysqldump --all-databases of the local DB. Keep 1 web archive and
+#      mysqldump --single-transaction --all-databases of the local DB. Keep 1 web archive and
 #      the last 3 SQL dumps locally (for fast rollback).
 #   3. push both archives to the secondary MX (separate LUKS volumes,
 #      retention windows: 7 web archives, 14 SQL archives).
@@ -14,6 +14,18 @@
 # from the rsync mirror. rsync mirrors the *current* state, useful for
 # disaster recovery, useless for "I broke something at 14:30, give me the
 # state of 06:00". The dated archives cover that gap.
+#
+# Database dump consistency
+# -------------------------
+# The SQL dump uses `mysqldump --single-transaction` because application tables
+# are expected to be InnoDB. This creates a consistent logical snapshot without
+# locking tables for the whole dump, so the web application can continue reading
+# and writing during the backup.
+#
+# This consistency guarantee applies to transactional tables such as InnoDB.
+# Non-transactional tables such as MyISAM are not protected by the transaction.
+# Avoid schema-changing during the dump (ALTER TABLE, CREATE TABLE, DROP TABLE,
+# RENAME TABLE, TRUNCATE TABLE).
 #
 # Secrets handling
 # ----------------
@@ -201,9 +213,16 @@ build_local_archives() {
   date_time="$(date +%Y-%m-%d_%H:%M:%S)"
   file_name="${db_name}${date_time}.sql"
 
-  # Credentials read from /root/.my.cnf (mode 0600).
-  # The dedicated `backup_dump` user has SELECT/LOCK TABLES only.
-  mysqldump --defaults-extra-file=/root/.my.cnf --all-databases > "${file_name}"
+# Credentials read from /root/.my.cnf (mode 0600).
+# --single-transaction gives a consistent InnoDB snapshot without table locks,
+# so the web application keeps reading and writing during the dump.
+mysqldump \
+  --defaults-extra-file=/root/.my.cnf \
+  --all-databases \
+  --single-transaction \
+  --source-data=2 \
+  --quick \
+  > "${file_name}"
 
   # ---- Local retention: keep last 3 SQL dumps and 1 web archive folder ----
   ls -t Backup-*    2>/dev/null | tail -n +4 | xargs -r rm --
